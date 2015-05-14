@@ -68,12 +68,10 @@ results.params.plus = plus;
 results.params.minus = minus;
 results.params.dt = dt;
 results.params.media = media;
-results.params.origFile = [folder filesep file];
+results.params.origFile = tifFile;
 
 results.data_fitted = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
 figure; imshow(results.data_fitted,[dApprox-minus dApprox+plus]);
 
-
 saveName = [datestr(now, 'HHMMSS') 'results.mat'];
-
-    [filename, pathname] = uiputfile(saveName, 'Save results as');
+[filename, pathname] = uiputfile(saveName, 'Save results as');

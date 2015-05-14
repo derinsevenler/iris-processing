@@ -34,8 +34,8 @@ dt = str2num(answer{5});
 %% Load the images 
 
 % Get the measurement image file info
-[file, folder] = uigetfile('*.*', 'Select the TIFF image stack (multicolor)');
-tifFile= [folder filesep file];
+[imfile, imfolder] = uigetfile('*.*', 'Select the TIFF image stack (multicolor)');
+tifFile= [imfolder filesep imfile];
 
 % Get the mirror image file info
 [mirFile, mirFolder] = uigetfile('*.*', 'Select the mirror file (TIFF image stack also)');
@@ -69,14 +69,12 @@ results.params.plus = plus;
 results.params.minus = minus;
 results.params.dt = dt;
 results.params.media = media;
-results.params.origFile = [folder filesep file];
+results.params.origFile = tifFile;
 
 results.data_fitted = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
 figure; imshow(results.data_fitted,[dApprox-minus dApprox+plus]);
 
 
-saveName = [file filesep datestr(now, 'HHMMSS') 'results.mat'];
 
-    [filename, pathname] = uiputfile([datestr(now, 'HHMMSS') 'results.mat'], 'Save results as');
-
-save(saveName, 'results');
+saveName = [datestr(now, 'HHMMSS') 'results.mat'];
+[filename, pathname] = uiputfile(saveName, 'Save results as');
