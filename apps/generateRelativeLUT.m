@@ -25,10 +25,10 @@ options.WindowStyle='normal';
 answer=inputdlg(prompt,name,numlines,defaultanswer, options);
 
 media = answer{1};
-dApprox = answer{2};
-minus = answer{3};
-plus = answer{4};
-dt = answer{5};
+dApprox = str2num(answer{2});
+minus = str2num(answer{3});
+plus = str2num(answer{4});
+dt = str2num(answer{5});
 
 %% Load the images
 
@@ -43,7 +43,7 @@ mirFile= [mirFolder filesep mirFile];
 % load the first image to get the self-reference region
 f = figure('Name', 'Please select a region of bare Si');
 im = double(imread(tifFile, 1));
-[~, selfRefRegion] = imcrop(im, double(median(im(:)))*[.8 1.2]);
+[~, selfRefRegion] = imcrop(im, median(im(:))*[.8 1.2]);
 pause(0.01); % so the window can close
 close(f);
 
@@ -74,8 +74,6 @@ results.data_fitted = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 
 figure; imshow(results.data_fitted,[dApprox-minus dApprox+plus]);
 
 
-saveName = [file filesep datestr(now, 'HHMMSS') 'results.mat'];
+saveName = [datestr(now, 'HHMMSS') 'results.mat'];
 
-    [filename, pathname] = uiputfile([datestr(now, 'HHMMSS') 'results.mat'], 'Save results as');
-
-save(saveName, 'results');
+    [filename, pathname] = uiputfile(saveName, 'Save results as');

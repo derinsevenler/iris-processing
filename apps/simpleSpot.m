@@ -16,7 +16,7 @@ rs = min(spotRect(3:4));
 roInner = max(spotRect(3:4));
 roOuter = roInner+rs; % thinner for more oblong psots, thicker for more spherical spots. I have a hunch this will tend to improve the adaptability of ratio of their areas.
 
-xy = meshgrid(1:size(im,1), 1:size(im,2));
+[x, y] = meshgrid(1:size(im,1), 1:size(im,2));
 Rs = zeros(size(im));
 
 
