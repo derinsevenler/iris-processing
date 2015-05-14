@@ -49,11 +49,20 @@ When you run either script, you will be presented with a dialog box with the fol
 * **nm below** and **nm above** - Together, these define the span of the lookup table. Using *nm below = 5* and *nm above = 10* will generate a lookup table over the range *(n-5, n+10)*, where *n* is the average baseline oxide thickness. A larger range is sometimes required for microarray spots with very high immobilization, but a larger lookup table will take longer to generate.
 * **nm increment** - This defines the resolution of the lookup table. A higher-resolution table will take longer to generate, but provide more precise measurements.
 
+After setting this, you will be presented with a dialog box to open the the image you wish to measure. Then, you will be presented with a dialog box to select a mirror file. The mirror image data must have the same height and width as the image you are measuring.
 
+You will next be presented with a window of to select a region of bare Silicon. The purpose of this to account for temporal variations in illumination (exposure time, temporal fluctuations in illumination intensity, etc). Select a region by drawing a rectangle using click-and-drag. You can resize and move this rectangle, which should include only bare Silicon. Try to select a region that is blemish-free - dark patches caused by dust particles can reduce the quality of this measurement. Accept your crop region by double-clicking within your rectangle.
+
+Following this, you will be presented with a similar window, this time asking you to select a region of oxide. Again, try to select a region of oxide that is blemish-free, and includes no spots or other features. The thickness of the oxide in the region you select will either be measured (using curvefitting) or set to the number you provided in the first dialog box, and used as the baseline for the look-up table. Region selection works the same as in the previous windows.
+
+Once you have provided the values and selected the regions, a progressbar will show while the lookup table is generated. Following the completion of this step, oxide thicknesses across the entire image will be measured and displayed in a window for your inspection. One way to expore these results is with the MATLAB data cursor. Regions which were the limits of the lookup table (either too bright or too dim) are set to 0, and display as black. During this step, see that your spots were all measured appropriately. You may find that some of your spots are partly black. During microarray drying, salt deposition onto the spots is normal. It can result in small patches on the spot which are much (perhaps 2x) brighter than the background. If this is the cause of black regions within your spots, everything is working normally. However, if you have spots with very high immobilization, it is sometimes possible for the spot height to exceed the maximum value of the lookup table. If this seems to be the case, you will need to generate a new lookup table with a larger value of *nm above*.
+
+Once you close the results window, you will be presented with a dialog box asking where you would like to save the results. This results file contains not only the measured oxide image but also the lookup table that was used.
 
 ### Applying a lookup table to a single image
+If you want to analyze a batch of chips that all have the same oxide thickness, it is not necessary to generate a new lookup table for each. Instead, you may use the lookup table from the first image to measure the rest. To measure a single image with a previously generated lookup table, run the script `useLUTsingle`. You will be asked for the data and mirror files, as before, but also the results file that contains the lookup table you wish to use. The output that will be saved contains not only the height measurements from this image but also the lookup table that was used, and the name of the original results file from which it was copied.
 
 ### Applying a lookup table to a series of images
-This feature is not available at this time, unfortunately. It's under active development though, so 
+This feature is not included in this release. The next update will include it however, so stay tuned.
 
-It's important to note that you don't always need to generate a new lookup table for each new image you use. 
+Last updated 14 May 2015 by [Derin Sevenler](mailto:derin@bu.edu)
