@@ -10,6 +10,7 @@
 % If your oxide thickness is less, use 'generateRelativeLUT'.
 
 %% Get fit parameters
+warning('off','images:initSize:adjustingMag');
 
 prompt={'Media ("air" or "water")',
 	'approximate oxide thickness',
@@ -25,10 +26,10 @@ options.WindowStyle='normal';
 answer=inputdlg(prompt,name,numlines,defaultanswer, options);
 
 media = answer{1};
-dApprox = answer{2};
-minus = answer{3};
-plus = answer{4};
-dt = answer{5};
+dApprox = str2num(answer{2});
+minus = str2num(answer{3});
+plus = str2num(answer{4});
+dt = str2num(answer{5});
 
 %% Load the images 
 
