@@ -13,8 +13,8 @@ lambda = (.4:.001:.65)';
 n = load('refractiveIndices.mat');
 
 % LED spectrum of this LED (xdata)
-ledF = load('ledSpectraArray.mat');
-% ledF = load('iris1LEDSpectra.mat');
+% ledF = load('ledSpectraArray.mat'); % measured at Koc university
+ledF = load('iris1LEDSpectra.mat'); % extracted from MGrid code
 ledSpectra=ledF.spectra;
 
 
@@ -24,7 +24,7 @@ nSi_l = interp1(n.nSi(:,1), n.nSi(:,2), lambda);
 
 for z = 1:4
 	% darkS = interp1(ledSpectra{5}(:,1)*.001, ledSpectra{5}(:,2), lambda); % ledSpectra wavelength is in nm!
-	s = interp1(ledSpectra{z}(:,1)/1000, ledSpectra{z}(:,2), lambda);
+	s = interp1(ledSpectra{z}(:,1), ledSpectra{z}(:,2), lambda);
 	% s = s- darkS; % remove dark signal from the photodetector used to make the measurements
 	
 	s(s<0) = 0; % remove negative numbers

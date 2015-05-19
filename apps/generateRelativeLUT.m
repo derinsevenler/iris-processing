@@ -75,3 +75,4 @@ figure; imshow(results.data_fitted,[dApprox-minus dApprox+plus]);
 
 saveName = [datestr(now, 'HHMMSS') 'results.mat'];
 [filename, pathname] = uiputfile(saveName, 'Save results as');
+save([pathname filesep filename], 'results');

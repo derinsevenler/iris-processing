@@ -13,7 +13,7 @@ mirFile= [folder filesep file];
 % load the first image to get the self-reference region
 f = figure('Name', 'Please select a region of bare Si');
 im = imread(tifFile, 1);
-[~, selfRefRegion] = imcrop(im, double(median(im(:)))*[.8 1.2]);
+[~, selfRefRegion] = imcrop(im, median(double(im(:)))*[.8 1.2]);
 pause(0.01); % so the window can close
 close(f);
 
