@@ -3,7 +3,30 @@
 % get the image
 f = uigetfile('*.*', 'Select the results mat file:');
 data = load(f);
-im = data.results.data_fitted;
+raw = data.results.data_fitted;
+
+% remove oxide regions
+noSquareIm = raw;
+zeroMask = (raw == 0);
+cropMask = imdilate(zeroMask, strel('disk',6));
+cc = bwconncomp(cropMask, 4);
+for n = 1:cc.NumObjects
+	t = false(size(zeroMask));
+	t(cc.PixelIdxList{n}) = true;
+	
+	% measure the average value around this object
+	bndry = logical(imdilate(t, strel('disk', 3))- t);
+	
+
+	bndryValsLT = raw(bndry);
+	bndryValLT = mean(bndryValsLT(bndryValsLT~=0));
+
+	% set the value within the object to that value
+	noSquareIm(t) = bndryValLT;
+end
+im = noSquareIm;
+
+
 
 out = inputdlg('How many spots do you wish to analyze?', 'Number of spots', 1,{'1'});
 numSpots = str2num(out{1});
@@ -46,30 +69,30 @@ for n = 1:numSpots
 
 	% Show the regions
 
-	r1 = centroid(1) - (roOuter +5); % fudge factor
-	r2 = centroid(1) + (roOuter +5);
-	c1 = centroid(2) - (roOuter +5); % fudge factor
-	c2 = centroid(2) + (roOuter +5);
+	% r1 = centroid(1) - (roOuter +5); % fudge factor
+	% r2 = centroid(1) + (roOuter +5);
+	% c1 = centroid(2) - (roOuter +5); % fudge factor
+	% c2 = centroid(2) + (roOuter +5);
 
-	imReg = im(r1:r2,c1:c2);
-	h = figure;
-	imshow(imReg, median(imReg(:))*[.8, 1.2], 'InitialMagnification',500);
+	% imReg = im(r1:r2,c1:c2);
+	% h = figure;
+	% imshow(imReg, median(imReg(:))*[.8, 1.2], 'InitialMagnification',500);
 
-	% draw a circle for the spot, and two for the annulus
-	th = 0:pi/50:2*pi;
-	% spot
-	xunit = rs * cos(th) + centroid(2)- c1;
-	yunit = rs * sin(th) + centroid(1)- r1;
-	hold on; plot(xunit, yunit, '-b');
+	% % draw a circle for the spot, and two for the annulus
+	% th = 0:pi/50:2*pi;
+	% % spot
+	% xunit = rs * cos(th) + centroid(2)- c1;
+	% yunit = rs * sin(th) + centroid(1)- r1;
+	% hold on; plot(xunit, yunit, '-b');
 
-	%annulus
-	xunit = roInner * cos(th) + centroid(2)- c1;
-	yunit = roInner * sin(th) + centroid(1)- r1;
-	hold on; plot(xunit, yunit, '-r');
-	xunit = roOuter * cos(th) + centroid(2)- c1;
-	yunit = roOuter * sin(th) + centroid(1)- r1;
-	hold on; plot(xunit, yunit, '-r');
+	% %annulus
+	% xunit = roInner * cos(th) + centroid(2)- c1;
+	% yunit = roInner * sin(th) + centroid(1)- r1;
+	% hold on; plot(xunit, yunit, '-r');
+	% xunit = roOuter * cos(th) + centroid(2)- c1;
+	% yunit = roOuter * sin(th) + centroid(1)- r1;
+	% hold on; plot(xunit, yunit, '-r');
 
-	pause(3);
-	close(h);
+	% pause(3);
+	% close(h);
 end
