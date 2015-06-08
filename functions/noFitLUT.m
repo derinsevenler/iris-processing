@@ -3,15 +3,14 @@ function [d, bestColor, LUT, X] = noFitLUT(data, media, dGiven, minus, plus, dt)
 % Here, we prescribe the baseline thickness with dGiven, rather than fit it accurately.
 
 % first, get the average background values of the images
-disp('starting lutFitOne...');
 h = figure;
-blue = squeeze(data(1,:,:));
+blue = squeeze(data(:,:,1));
 [blueC, RECT] = imcrop(blue, median(blue(:))*[.8 1.2]);
 close(h);
 pause(.01);
-greenC = imcrop(squeeze(data(2,:,:)), RECT);
-orangeC = imcrop(squeeze(data(3,:,:)), RECT);
-redC = imcrop(squeeze(data(4,:,:)), RECT);
+greenC = imcrop(squeeze(data(:,:,2)), RECT);
+orangeC = imcrop(squeeze(data(:,:,3)), RECT);
+redC = imcrop(squeeze(data(:,:,4)), RECT);
 m = [mean(blueC(:)), mean(greenC(:)), mean(orangeC(:)), mean(redC(:))];
 
 % Then, fit those values with lsqcurvefit
@@ -26,7 +25,7 @@ lutX = [xdata{1} X];
 disp('Interpolating...');
 % convert the LUT from microns to nm
 LUT(:,1) = LUT(:,1)*1000;
-bestImg = squeeze(data(bestColor,:,:));
+bestImg = squeeze(data(:,:,bestColor));
 
 d = interp1(LUT(:,2), LUT(:,1), bestImg, 'nearest', 0); % use nearest neighbor interpolation, extrapolation value 0
 disp('Finished!');

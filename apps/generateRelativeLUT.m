@@ -10,6 +10,8 @@
 % If your oxide thickness is more, you may get better results with 'generateRelativeLUT'.
 
 %% Get fit parameters
+warning('off','images:initSize:adjustingMag');
+
 
 prompt={'Media ("air" or "water")',
 	'approximate oxide thickness',
@@ -63,16 +65,19 @@ end
 
 % Save the LUT and the Parameters
 results.LUT = LUT;
-results.params.dGiven = dApprox;
-results.params.plus = plus;
-results.params.minus = minus;
-results.params.dt = dt;
-results.params.media = media;
-results.params.origFile = tifFile;
+results.bestColor = bestColor;
 
-results.data_fitted = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
-figure; imshow(results.data_fitted,[dApprox-minus dApprox+plus]);
+params.dGiven = dApprox;
+params.plus = plus;
+params.minus = minus;
+params.dt = dt;
+params.media = media;
+params.origFile = tifFile;
+
+
+results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
+figure; imshow(results.heights,[dApprox-minus dApprox+plus]);
 
 saveName = [datestr(now, 'HHMMSS') 'results.mat'];
 [filename, pathname] = uiputfile(saveName, 'Save results as');
-save([pathname filesep filename], 'results');
+save([pathname filesep filename], 'results', 'params');
