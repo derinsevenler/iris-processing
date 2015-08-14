@@ -1,6 +1,7 @@
 function outI = removeSiSquares(im)
 % input a fitted image, and the output image won't have any bare Si squares.
-% select the region with spots. This only works with images that were fit with the LUT - they are set to 
+% select the region with spots. This only works with images that were 
+% fit with the LUT - they set all unfit pixels to 0.
 
 % find all regions with zeros, and make a mask around them.
 zeroMask = (im == 0);
