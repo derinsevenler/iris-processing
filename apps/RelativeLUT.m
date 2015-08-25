@@ -1,4 +1,4 @@
-% generateAccurateLUT.m
+% RelativeLUT.m
 % 11 May 2015, Derin Sevenler
 
 % This script generates a lookup table for an IRIS image.
@@ -12,31 +12,17 @@
 %% Get fit parameters
 warning('off','images:initSize:adjustingMag');
 
-
-prompt={'Media ("air" or "water")',
-	'approximate oxide thickness',
-	'lookup table - nm below',
-	'lookup table - nm above',
-	'lookup table - nm increment'};
-
-name='Lookup table parameters';
-numlines = 1;
-defaultanswer={'air', '100','10','10','.1'}; 
-options.Resize='on';
-options.WindowStyle='normal';
-answer=inputdlg(prompt,name,numlines,defaultanswer, options);
-
-media = answer{1};
-dApprox = str2num(answer{2});
-minus = str2num(answer{3});
-plus = str2num(answer{4});
-dt = str2num(answer{5});
+[Answer, Cancelled] = getLUTparams();
+if Cancelled
+	disp('Goodbye');
+	return;
+end
 
 %% Load the images
 
 % Get the measurement image file info
-[file, folder] = uigetfile('*.*', 'Select the TIFF image stack (multicolor)');
-tifFile= [folder filesep file];
+[imfile, imfolder] = uigetfile('*.*', 'Select the TIFF image stack (multicolor)');
+tifFile= [imfolder filesep imfile];
 
 % Get the mirror image file info
 [mirFile, mirFolder] = uigetfile('*.*', 'Select the mirror file (TIFF image stack also)');
@@ -61,7 +47,7 @@ end
 
 %% Perform fitting and generate the look up table.
 
-[d, bestColor, LUT, X] = noFitLUT(data, media, dApprox, minus, plus, dt);
+[d, bestColor, LUT, X] = noFitLUT(data, Answer.medium, Answer.film, Answer.temperature, Answer.dApprox, Answer.minus, Answer.plus, Answer.dt);
 
 % Save the LUT and the Parameters
 results.LUT = LUT;

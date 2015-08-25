@@ -1,7 +1,12 @@
-function [d, bestColor, LUT, X] = singleFrameLUT(data, media, dApprox, minus, plus, dt)
+function [d, bestColor, LUT, X] = singleFrameLUT(data, medium, film, temperature, dApprox, minus, plus, dt)
 % data is the image you want to fit. 
-% media is the emersion media (i.e., 'air', 'water', 1.34, etc.)
+% medium is the emersion medium ('air' or 'water')
+% film is the film material ('SiO2' or 'PMMA')
+% temperature is in celcius
 % dApprox is the nominal SiO2 thickness, in nanometers.
+% plus, minus and dt define the lookup table range as follows: 
+% range = (baseline - minus):dt:(basline+plus)
+% (all are positive)
 
 % first, get the average background values of the images
 
@@ -22,7 +27,7 @@ X = lsqcurvefit(@irisFun, [dApprox/1000 1 0], media, m); % dApprox converted to 
 
 % Generate a 1-color LUT with the fitted values
 disp('generating LUT...');
-[bestColor, LUT] = generateSimpleLUT(X, media, minus, plus, dt);
+[bestColor, LUT] = makeLUT(X, medium, film, temperature, minus, plus, dt);
 % use the LUT to get the approximate heights
 disp('Interpolating...');
 % convert the LUT from microns to nm

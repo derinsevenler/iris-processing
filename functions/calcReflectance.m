@@ -1,5 +1,5 @@
 function R = calcReflectance(d, lambda, varargin)
-% R = calcReflectance(d, lambda, [media, film, temperature])
+% R = calcReflectance(d, lambda, [medium, film, temperature])
 % 
 % Calcualtes the reflectance spectrum R 
 % for a film of thickness 'd' over the wavelength range 
@@ -9,7 +9,7 @@ function R = calcReflectance(d, lambda, varargin)
 % Parameters 'd', 'lambda' are required.
 % Optional parameters:
 % 
-% 'media': It works with an immersion media of either air or pure water.
+% 'medium': It works with an immersion medium of either air or pure water.
 % 		The default is 'air', otherwise provide 'water'. 
 % 'film': It works with films of either pure amorphous SiO2, or microchem 
 % 		PMMA 495. The default is 'SiO2', otherwise provide 'PMMA'.
@@ -18,7 +18,7 @@ function R = calcReflectance(d, lambda, varargin)
 % 		The default is 20 (numeric, in celcius).
 %
 % As always, if you want to provide the optional parameter 'temperature', you need to 
-% also provide 'media' and 'film' first.
+% also provide 'medium' and 'film' first.
 
 % parse inputs
 numVarArgs = length(varargin);
@@ -27,7 +27,7 @@ if numVarArgs > 3
 end
 optArgs = {'air', 'SiO2',20};
 optArgs(1:numVarArgs) = varargin;
-[media, film, temperature] = optArgs{:};
+[medium, film, temperature] = optArgs{:};
 
 
 theta = 0; % angle of incidence
@@ -36,15 +36,15 @@ R = [];
 for n = 1:length(lambda)
 
 	% =================================
-	% Get the media refractive index
+	% Get the medium refractive index
 	% =================================
 	% it's approximated by the real part only
 
-	if strcmp(media, 'air')
-		nMedia = 1; % constant 
-	elseif strcmp(media, 'water')
+	if strcmp(medium, 'air')
+		nMedium = 1; % constant 
+	elseif strcmp(medium, 'water')
 		% use temperature equation
-		nMedia = waterRefractiveIndexTemp(lambda(n), temperature);
+		nMedium = waterRefractiveIndexTemp(lambda(n), temperature);
 	end
 
 	% ================================
@@ -65,7 +65,7 @@ for n = 1:length(lambda)
 	nSubstrate = SiRefractiveIndexTemp(lambda(n), temperature);
 
 	% Calculate the reflection coefficient using fresnel equation
-	nVec = [nMedia, nFilm, nSubstrate];
+	nVec = [nMedium, nFilm, nSubstrate];
 	[r123, t123] = fres2(nVec, d, theta, lambda(n)); % r123 is the reflection coefficient, a *complex amplitude*.
 	R(n) = abs(r123); % R is the magnitude of the reflection coefficient - corresponding with the electric field strength.
 end
