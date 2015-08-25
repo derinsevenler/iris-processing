@@ -1,13 +1,10 @@
-% AccurateLUT.m
+% GenerateLUT.m
 % 11 May 2015, Derin Sevenler
 
 % This script generates a lookup table for an IRIS image.
 % This script is only configured to work with TIFF stacks collected using micromanager, 
 % saved in the order (blue, green, orange red). Use only a single image (not a time series)
 % with this function.
-
-% This script is designed to work with IRIS films that are thick enough to be fit using nonlinear least squares regression: in water over 200nm, dry over 80nm.
-% If your oxide thickness is less, use 'generateRelativeLUT'.
 
 %% Get fit parameters
 warning('off','images:initSize:adjustingMag');
@@ -18,7 +15,7 @@ if Cancelled
 	return;
 end
 
-%% Load the images 
+%% Load the images
 
 % Get the measurement image file info
 [imfile, imfolder] = uigetfile('*.*', 'Select the TIFF image stack (multicolor)');
@@ -47,7 +44,14 @@ end
 
 %% Perform fitting and generate the look up table.
 
-[d, bestColor, LUT, X] = singleFrameLUT(data, Answer.medium, Answer.film, Answer.temperature, Answer.dApprox, Answer.minus, Answer.plus, Answer.dt);
+if strcmp(Answer.method('accurate'))
+	[d, bestColor, LUT, X] = singleFrameLUT(data, Answer.medium, Answer.film, Answer.temperature, Answer.dApprox, Answer.minus, Answer.plus, Answer.dt);
+elseif strcmp(Answer.method('relative'))
+	[d, bestColor, LUT, X] = noFitLUT(data, Answer.medium, Answer.film, Answer.temperature, Answer.dApprox, Answer.minus, Answer.plus, Answer.dt);
+else
+	disp(['fitting method ''' Answer.method ''' not found'])
+	return;
+end
 
 % Save the LUT and the Parameters
 results.LUT = LUT;
