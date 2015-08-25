@@ -1,8 +1,8 @@
-function nWater = WaterRefractiveIndexTemp(temp, lambda)
-% nWater = WaterRefractiveIndexTemp(temp, lambda)
+function nWater = WaterRefractiveIndexTemp(lambda, temperature)
+% nWater = WaterRefractiveIndexTemp(temperature, lambda)
 % 
-% temp is the temperature in C, between 20 and 100. Assumes pressure is sea level.
-% lambda is in nanometers
+% lambda is in microns
+% temperature is the temperature in C, between 20 and 100. Assumes pressure is sea level.
 
 
 
@@ -33,29 +33,20 @@ lambda_ref = .589; % microns
 % ========================
 % Your parameters
 % ========================
-T_range = 30:2:80; % in C
 lambda_range = .4:.01:.7; % microns
 
 % Normalization
-T_bar = (T_range+T_ref)/T_ref;
-p_range = interp1(water_p_temps,p_lookup, T_range);
-p_bar = p_range/p_ref;
-lambda_bar = lambda_range/lambda_ref;
+T_bar = (temperature+T_ref)/T_ref;
+p = interp1(water_p_temps,p_lookup, temperature);
+p_bar = p/p_ref;
+lambda_bar = lambda/lambda_ref;
 
 % perform calculation
 
-n = zeros(length(T_bar),length(lambda_bar));
-for x = 1:length(T_bar)
-	for y = 1:length(lambda_bar)
+lhs = @(n) ( (n^2-1)/(n^2+2)/p_bar ...
+		-	( a0 + a1*p_bar + a2*T_bar + a3*(lambda_bar^2)*T_bar + ...
+		 	  a4/lambda_bar^2 + a5/(lambda_bar^2 - lambda_uv^2) + ...
+		 	  a6/(lambda_bar^2 - lambda_ir^2) + a7*p_bar^2 ) ...
+	 );
 
-		lhs = @(n) ( (n^2-1)/(n^2+2)/p_bar(x) ...
-			-	( a0 + a1*p_bar(x) + a2*T_bar(x) + a3*(lambda_bar(y)^2)*T_bar(x) + ...
-			 	  a4/lambda_bar(y)^2 + a5/(lambda_bar(y)^2 - lambda_uv^2) + ...
-			 	  a6/(lambda_bar(y)^2 - lambda_ir^2) + a7*p_bar(x)^2 ) ...
-		 );
-
-		n(x,y) = fzero(lhs, 1.33);
-	end
-end
-figure; plot(lambda_range, n');
-figure;plot(T_range, n);
+nWater = fzero(lhs, 1.33);

@@ -1,8 +1,8 @@
-function nSi = SiRefractiveIndex(lambda, temp)
-% nSi = SiRefractiveIndex(lambda, temp)
+function nSi = SiRefractiveIndex(lambda, temperature)
+% nSi = SiRefractiveIndex(lambda, temperature)
 % Get the temperature-dependent refractive index of a 
-% lambda is the wavelength in nanometers
-% temp is in C between 20C and 100C
+% lambda is the wavelength in microns
+% temperature is in C between 20C and 100C
 % nSi is the refractive index at that temperature
 
 % data from Vuye 1993: http://refractiveindex.info/?shelf=main&book=Si&page=Vuye-100C
@@ -11,8 +11,8 @@ n20 		= [1.8250 1.8540 1.8990 1.9540 2.0140 2.0990 2.1880 2.2930 2.4260 2.5740 2
 n100 		= [1.9180 1.9730 2.0170 2.0560 2.1110 2.1730 2.2660 2.3520 2.4490 2.5760 2.7040 2.8800 3.0220 3.1830 3.3590 3.5760 3.7960 4.0480 4.3060 4.5370 4.7190 4.8820 4.9750 5.0350 5.0700 5.1020 5.1210 5.1210 5.1250 5.1470 5.1400 5.1340 5.1250 5.1490 5.1620 5.1730 5.1880 5.1990 5.2080 5.2220 5.2400 5.2700 5.3040 5.3290 5.3680 5.4080 5.4570 5.5100 5.6030 5.6870 5.8350 5.9910 6.1840 6.4270 6.6370 6.8140 6.8520 6.8010 6.6740 6.5140 6.3600 6.2040 6.0460 5.9130 5.7880 5.6760 5.5760 5.4770 5.3830 5.3010 5.2250 5.1560 5.0870 5.0180 4.9570 4.9030 4.8450 4.7920 4.7460 4.7000 4.6540 4.6120 4.5710 4.5290 4.4920 4.4570 4.4220 4.3880 4.3590 4.3260 4.2960 4.2700 4.2410 4.2150 4.1930 4.1700 4.1460 4.1260 4.1030 4.0830 4.0640 4.0450 4.0270 4.0080 3.9920 3.9730 3.9537 3.9400 3.9280 3.9110 3.8960 3.8810 3.8660 3.8550 3.8440 3.8330 3.8220 3.8049 3.7980 3.7838 3.7730 3.7600 3.7530 3.7430 3.7331 3.7230 3.7120 3.7040 3.6951 ];
 
 % find the the right n
-nl20 = interp1(wavelengths, n20, lambda/1000);
-nl100 = interp1(wavelengths, n100, lambda/1000);
+nl20 = interp1(wavelengths, n20, lambda);
+nl100 = interp1(wavelengths, n100, lambda);
 
 % interpolate between them
-nSi = interp1([20 100], [nl20 nl100],temp, 'linear');
+nSi = interp1([20 100], [nl20 nl100],temperature, 'linear');

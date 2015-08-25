@@ -21,6 +21,7 @@ modeSi = max(v); % i.e., the peak of brighter values
 modeSiO2 = min(v); % i.e., the other peak of darker values
 
 % make a mask for Si region
+% This binarization uses the midpoint (average value) between the two peaks (modes) in the blue channel. Otsu's method might be slightly better, or might make no difference.
 SiMask = ( blue > (modeSi + modeSiO2)/2 );
 
 % make a mask for SiO2 region
