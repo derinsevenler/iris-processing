@@ -44,9 +44,9 @@ end
 
 %% Perform fitting and generate the look up table.
 
-if strcmp(Answer.method('accurate'))
+if strcmp(Answer.method,'accurate')
 	[d, bestColor, LUT, X] = singleFrameLUT(data, Answer.medium, Answer.film, Answer.temperature, Answer.dApprox, Answer.minus, Answer.plus, Answer.dt);
-elseif strcmp(Answer.method('relative'))
+elseif strcmp(Answer.method,'relative')
 	[d, bestColor, LUT, X] = noFitLUT(data, Answer.medium, Answer.film, Answer.temperature, Answer.dApprox, Answer.minus, Answer.plus, Answer.dt);
 else
 	disp(['fitting method ''' Answer.method ''' not found'])

@@ -77,3 +77,5 @@ Formats(4,2).items = {'accurate','relative'};
 DefAns.method = 'accurate';
 
 [Answer,Cancelled] = inputsdlg(Prompt,Title,Formats,DefAns,Options);
+
+end

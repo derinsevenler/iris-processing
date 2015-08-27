@@ -1,4 +1,4 @@
-flofunction [Answer,Canceled] = inputsdlg(Prompt, Title, Formats, DefAns, Options)
+function [Answer,Canceled] = inputsdlg(Prompt, Title, Formats, DefAns, Options)
 %INPUTSDLG Enhanced input dialog box supporting multiple data types
 % ANSWER = INPUTSDLG(PROMPT) creates a modal dialog box that returns user
 % input for multiple prompts in the cell array ANSWER. PROMPT is a 1-D
