@@ -36,4 +36,5 @@ bestImg = squeeze(data(bestColor,:,:));
 
 d = interp1(LUT(:,2), LUT(:,1), bestImg, 'nearest', 0); % use nearest neighbor interpolation, extrapolation value 0
 disp('Finished!');
+
 end

@@ -42,7 +42,7 @@ Formats(2,2).type = 'edit';
 Formats(2,2).style = 'edit';
 Formats(2,2).format = 'float';
 Formats(2,2).size = [50 30];
-DefAns.dt = 0.1;
+DefAns.dt = 1;
 
 % Lookup table nm above
 Prompt(5,:) = {'  Look above:  ', 'plus', []};

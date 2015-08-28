@@ -57,15 +57,17 @@ end
 results.LUT = LUT;
 results.bestColor = bestColor;
 
-params.dGiven = dApprox;
-params.plus = plus;
-params.minus = minus;
-params.dt = dt;
-params.media = media;
+params.dGiven = Answer.dApprox;
+params.plus = Answer.plus;
+params.minus = Answer.minus;
+params.dt = Answer.dt;
+params.medium = Answer.medium;
+params.film = Answer.film;
+params.temperature = Answer.temperature;
 params.origFile = tifFile;
 
 
-results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
+results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'pchip', 0);
 figure; imshow(results.heights,[dApprox-minus dApprox+plus]);
 
 saveName = [datestr(now, 'HHMMSS') 'results.mat'];

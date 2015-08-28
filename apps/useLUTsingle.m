@@ -36,7 +36,7 @@ lutF = load([lutFolder filesep lutFile]);
 LUT = lutF.results.LUT;
 results.bestColor = lutF.results.bestColor;
 
-results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
+results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'pchip', 0);
 
 % Save the LUT with the Parameters
 params.dGiven = dApprox;
@@ -46,7 +46,7 @@ params.dt = dt;
 params.media = media;
 params.origFile = tifFile;
 
-results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
+results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'pchip', 0);
 figure; imshow(results.heights,[dApprox-minus dApprox+plus]);
 
 saveName = [datestr(now, 'HHMMSS') 'results.mat'];
