@@ -5,30 +5,6 @@
 data = load([pName filesep fName]);
 raw = data.results.heights;
 
-% remove oxide regions
-% disp('Smoothing image, please wait...');
-% noSquareIm = raw;
-% zeroMask = (raw == 0);
-% cropMask = imdilate(zeroMask, strel('disk',6));
-% cc = bwconncomp(cropMask, 4);
-% for n = 1:cc.NumObjects
-% 	t = false(size(zeroMask));
-% 	t(cc.PixelIdxList{n}) = true;
-	
-% 	% measure the average value around this object
-% 	bndry = logical(imdilate(t, strel('disk', 3))- t);
-	
-
-% 	bndryValsLT = raw(bndry);
-% 	bndryValLT = mean(bndryValsLT(bndryValsLT~=0));
-
-% 	% set the value within the object to that value
-% 	noSquareIm(t) = bndryValLT;
-% end
-% im = noSquareIm;
-im = raw;
-
-
 out = inputdlg('How many spots do you wish to analyze?', 'Number of spots', 1,{'1'});
 numSpots = str2num(out{1});
 
