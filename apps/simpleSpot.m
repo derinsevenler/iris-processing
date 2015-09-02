@@ -1,31 +1,32 @@
 % simpleSpot is a basic utility for measuring spot heights. Spots should not be within 1 radius from  any edge.
 
 % get the image
-f = uigetfile('*.*', 'Select the results mat file:');
-data = load(f);
-raw = data.results.data_fitted;
+[fName, pName] = uigetfile('*.*', 'Select the results mat file:');
+data = load([pName filesep fName]);
+raw = data.results.heights;
 
 % remove oxide regions
-noSquareIm = raw;
-zeroMask = (raw == 0);
-cropMask = imdilate(zeroMask, strel('disk',6));
-cc = bwconncomp(cropMask, 4);
-for n = 1:cc.NumObjects
-	t = false(size(zeroMask));
-	t(cc.PixelIdxList{n}) = true;
+% disp('Smoothing image, please wait...');
+% noSquareIm = raw;
+% zeroMask = (raw == 0);
+% cropMask = imdilate(zeroMask, strel('disk',6));
+% cc = bwconncomp(cropMask, 4);
+% for n = 1:cc.NumObjects
+% 	t = false(size(zeroMask));
+% 	t(cc.PixelIdxList{n}) = true;
 	
-	% measure the average value around this object
-	bndry = logical(imdilate(t, strel('disk', 3))- t);
+% 	% measure the average value around this object
+% 	bndry = logical(imdilate(t, strel('disk', 3))- t);
 	
 
-	bndryValsLT = raw(bndry);
-	bndryValLT = mean(bndryValsLT(bndryValsLT~=0));
+% 	bndryValsLT = raw(bndry);
+% 	bndryValLT = mean(bndryValsLT(bndryValsLT~=0));
 
-	% set the value within the object to that value
-	noSquareIm(t) = bndryValLT;
-end
-im = noSquareIm;
-
+% 	% set the value within the object to that value
+% 	noSquareIm(t) = bndryValLT;
+% end
+% im = noSquareIm;
+im = raw;
 
 
 out = inputdlg('How many spots do you wish to analyze?', 'Number of spots', 1,{'1'});
@@ -33,7 +34,7 @@ numSpots = str2num(out{1});
 
 for n = 1:numSpots
 	g = figure;
-	[spotR, spotRect] = imcrop(im, median(im(:))*[.8, 1.2]);
+	[spotR, spotRect] = imcrop(im, median(im(:))*[.95, 1.2]);
 	pause(0.05);
 	close(g);
 
@@ -55,7 +56,7 @@ for n = 1:numSpots
 
 	Rs = Rs';
 	Ran = Ran';
-	% get the average value for each region
+	% get the average (median) value for each region
 	temp = im.*Ran;
 	Van = temp( temp ~= 0);
 	Dan = median(Van);
@@ -96,3 +97,5 @@ for n = 1:numSpots
 	% pause(3);
 	% close(h);
 end
+
+disp('This data has not been saved - copy it elsewhere! Goodbye');

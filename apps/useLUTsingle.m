@@ -36,18 +36,13 @@ lutF = load([lutFolder filesep lutFile]);
 LUT = lutF.results.LUT;
 results.bestColor = lutF.results.bestColor;
 
-results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'pchip', 0);
+results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,results.bestColor)), 'pchip', 0);
 
-% Save the LUT with the Parameters
-params.dGiven = dApprox;
-params.plus = plus;
-params.minus = minus;
-params.dt = dt;
-params.media = media;
-params.origFile = tifFile;
+% Save the LUT with the original LUT parameters
+params = lutF.params;
 
-results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'pchip', 0);
-figure; imshow(results.heights,[dApprox-minus dApprox+plus]);
+results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,results.bestColor)), 'pchip', 0);
+figure; imshow(results.heights,[params.dGiven-params.minus params.dGiven+params.plus]);
 
 saveName = [datestr(now, 'HHMMSS') 'results.mat'];
 [filename, pathname] = uiputfile(saveName, 'Save results as');

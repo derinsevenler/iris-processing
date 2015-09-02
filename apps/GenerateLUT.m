@@ -68,7 +68,7 @@ params.origFile = tifFile;
 
 
 results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'pchip', 0);
-figure; imshow(results.heights,[dApprox-minus dApprox+plus]);
+figure; imshow(results.heights,[Answer.dApprox-Answer.minus Answer.dApprox+Answer.plus]);
 
 saveName = [datestr(now, 'HHMMSS') 'results.mat'];
 [filename, pathname] = uiputfile(saveName, 'Save results as');
