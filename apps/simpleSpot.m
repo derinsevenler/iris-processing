@@ -3,7 +3,7 @@
 % get the image
 [fName, pName] = uigetfile('*.*', 'Select the results mat file:');
 data = load([pName filesep fName]);
-raw = data.results.heights;
+im = data.results.heights;
 
 out = inputdlg('How many spots do you wish to analyze?', 'Number of spots', 1,{'1'});
 numSpots = str2num(out{1});

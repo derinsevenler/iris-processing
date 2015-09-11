@@ -5,7 +5,7 @@ function outI = removeSiSquares(im)
 
 % find all regions with zeros, and make a mask around them.
 zeroMask = (im == 0);
-cropMask = imdilate(zeroMask, strel('disk',6));
+cropMask = imdilate(zeroMask, strel('disk',4));
 % figure; imshow(cropMask);
 
 % segment all of these regions

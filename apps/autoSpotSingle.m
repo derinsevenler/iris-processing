@@ -1,4 +1,4 @@
-function [heights] = autoSpotSingle(raw,nCols,nRows,radius)
+% function [heights] = autoSpotSingle(raw,nCols,nRows,radius)
 % function [heights] = autoSpotSingle(image,nCols,nRows,radius)
 % 
 % autoSpot is an interactive utility for automatically measuring the heights of a grid of spots. 
@@ -26,34 +26,49 @@ im = removeSiSquares(raw);
 % find the circles
 % ================================
 f = figure; imshow(im,[]);
-title('Please click first on the upper-leftmost spot, then on the lower-rightmost spot');
-[flX,flY] = ginput(2);
-close(f);
+title('Please click the first spot in each column, then the last spot in the first column');
+[flX,flY] = ginput(nCols+1);
+% close(f);
 
-sliceW = round((flY(2)-flY(1))/(nCols-1));
-sliceH = round((flX(2)-flX(1))/(nCols-1)*nCols);
+deltaRC = [flY(end)-flY(1), flX(end)-flX(1)]/(nRows-1);
 
-startRC = round([flY(1)-sliceW/2, flX(1)-sliceW/2]);
-
-ff = 15;
-sliceR = (startRC(1)-ff):(startRC(1)+ sliceH+ff);
-
-r = [];
-c = [];
-for row = 1:nRows
-	sliceC = (startRC(2)+(row-1)*sliceW-ff):(startRC(2)+row*sliceW+ff);
-	slice = im(sliceR,sliceC);
-
-	% screw with the slice to make sure the circles are visible enough
-	m = median(slice(:));
-	st = std(slice(:));
-	slice(slice<m-3*st) = median(slice(:));
-
-	[thisC,thisR] = imfindcircles(slice, [radius/1.5,radius*1.5]); % these parameters must be optimized
-
-	c = [c; thisC+repmat([sliceC(1) sliceR(1)], length(thisC),1)];
-	r = [r;thisR];
+% get grid positions
+cR = zeros(nRows, nCols);
+cC = zeros(nRows, nCols);
+for n = 1:nRows
+	for m = 1:nCols
+		cR(n,m) = round(flY(m)+(n-1)*deltaRC(1));
+		cC(n,m) = round(flX(m)+(n-1)*deltaRC(2));
+	end
 end
+hold on;
+plot(cC,cR,'*');
+
+% find circles at each grid position
+c = [];
+r = [];
+regionHW = radius*3;
+for m = 1:nCols
+	for n = 1:nRows
+		% disp(['Spot ' num2str(n) ' ' num2str(m) ':'])
+		spotRegion = im( (cR(n,m)-regionHW):(cR(n,m)+regionHW) , (cC(n,m)-regionHW):(cC(n,m)+regionHW) );
+
+		thFactor = 5;
+		thisC = [];
+		while isempty(thisC)
+			% iteratively lower threshold until you can see the particle
+			th = median(spotRegion(:))-thFactor*std(spotRegion(:));
+			spotRegion(spotRegion<95)=median(spotRegion(:));
+			[thisC,thisR] = imfindcircles(spotRegion, round([radius/1.5,radius*1.5]));
+			thFactor = thFactor*.9;
+		end
+		
+		thisC + [cR(n,m), cC(n,m)] - regionHW;
+		c = [c; fliplr(thisC) + [cR(n,m), cC(n,m)] - regionHW];
+		r = [r; thisR];
+	end
+end
+c = fliplr(c);
 
 % show the circles
 figure; imshow(im,[]);
@@ -77,25 +92,8 @@ for n = 1:length(c)
 	hts(n) = spotH-annH;
 end
 
-% sort them into a grid
-[~,xSort] = sort(c(:,1),'ascend');
-cSortX = c(xSort,:);
-hSortX = hts(xSort);
-
-hGrid = zeros(nRows, nCols);
-cGrid = zeros(nRows, nCols,2);
-
-for m = 1:nCols
-	idx = ((m-1)*nRows+1):m*nRows;
-	thisC = cSortX(idx,:);
-	thisH = hSortX(idx,:);
-	[~,ySort] = sort(thisC(:,2),'ascend');
-	cGrid(:,m,:) = thisC(ySort,:);
-	hGrid(:,m) = thisH(ySort);
-end
+hGrid = reshape(hts,nRows,nCols);
 
 disp('Complete. Here are the heights:')
 disp(hGrid)
-heights = hGrid;
 
-end
