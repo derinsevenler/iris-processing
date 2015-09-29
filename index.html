@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Iris-processing by dd7ler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Iris-processing</h1>
+      <h2 class="project-tagline">Image processing for IRIS microarray measurements</h2>
+      <a href="https://github.com/dd7ler/iris-processing" class="btn">View on GitHub</a>
+      <a href="https://github.com/dd7ler/iris-processing/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/dd7ler/iris-processing/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h2>
+<a id="welcome-to-iris-processing" class="anchor" href="#welcome-to-iris-processing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to IRIS Processing</h2>
+
+<p>IRIS (Interference Reflectance Imaging Sensor) is a label-free microarray technology, capable of making hundreds or thousands of measurements of biological affinity and concentration simultaneously. IRIS Processing is an essential utility for converting raw data collected with IRIS to measurements of molecular binding. </p>
+
+<p>You can learn more about IRIS on our lab website - <a href="https://ultra.bu.edu">https://ultra.bu.edu</a> - or the following selected publications:</p>
+
+<ul>
+<li>G. G. Daaboul <em>et al.</em> <a href="http://www.sciencedirect.com/science/article/pii/S0956566310006524">"LED-based Interferometric Reflectance Imaging Sensor for quantitative dynamic monitoring of biomolecular interactions,"</a> Biosensors and Bioelectronics, January 2011.</li>
+<li>E. Ozkumur <em>et al.</em> <a href="http://www.sciencedirect.com/science/article/pii/S0956566309007106">"Label-free microarray imaging for direct detection of DNA hybridization and single-nucleotide mismatches,"</a> Biosensors and Bioelectronics, March 2010.</li>
+<li>E. Ozkumur <em>et al.</em> <a href="http://www.pnas.org/content/105/23/7988">"Label-free and dynamic detection of biomolecular interactions for high-throughput microarray applications,"</a> Proceedings of the National Academy of Science, June 2008.</li>
+</ul>
+
+<h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting Started</h2>
+
+<h3>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h3>
+
+<ul>
+<li>IRIS Processing is supported on MATLAB version 2013a or later, on either Windows or OS X.</li>
+<li>It's helpful to have a specialized image viewing and analysis program. MATLAB works alright for this, but <a href="http://imagej.nih.gov/ij/">ImageJ</a> is highly recomended.</li>
+<li>At this time, IRIS Processing does not provide any microarray analysis utilities (spot finding, etc). You will probably want to use a dedicated <a href="https://duckduckgo.com/?q=microarray%20analysis%20software">microarray analysis software</a> later in your analysis pipeline.</li>
+</ul>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>IRIS Processing functions and scripts are run entirely from the MATLAB command window. If you're new to programming, don't worry - there's very little you need to know about MATLAB or programming in general.</p>
+
+<p>Download the latest version of the program from <a href="http://dd7ler.github.io/iris-processing/">http://dd7ler.github.io/iris-processing/</a> and unpack it somewhere on your computer that you have write access. The 'MATLAB' subdirectory in your 'Documents' folder is not a bad place. You'll want to edit and save your MATLAB path to include this directory. One way to do this is by starting MATLAB and typing this into the command window:</p>
+
+<pre><code>addpath(genpath('/full/path/to/iris-processing'));
+</code></pre>
+
+<h3>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h3>
+
+<p>IRIS Processing needs to know the spectra of the illumination that your IRIS instrument uses. At this time, IRIS Processing is configured with the spectra measured from a particular ACCULED composite RGYB surface-mounted LED packages that we have been using in all of our new instruments. If you are unsure if this is the right set of spectra for your instrument or want to record them yourself to use, don't hesistate to contact me at <a href="mailto:derin@bu.edu">derin@bu.edu</a> about how to get that set up.</p>
+
+<h3>
+<a id="image-formats" class="anchor" href="#image-formats" aria-hidden="true"><span class="octicon octicon-link"></span></a>Image formats</h3>
+
+<p>At this time, IRIS Processing supports TIFF images (acquired through Micro-Manager, for example) or *.mat MATLAB data files that are used by Zoiray acquisition software. </p>
+
+<h3>
+<a id="image-acquisition-considerations" class="anchor" href="#image-acquisition-considerations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Image acquisition considerations</h3>
+
+<p>IRIS Processing is sensitive to small spatial variations in the illumination brightness. In order to account for spatial variations in illumination, images are always first normalized by acquiring reference images of a featureless reflecting bare Silicon substrate (called 'mirror' images). Mirror images generally need only be acquired when the optical alignment of the instrument is changed (e.g., if an optical component or stage component is adjusted). Acquire a mirror image in exactly the same way you do normally - use every channel, and average several frames for each channel.</p>
+
+<h2>
+<a id="using-iris-processing" class="anchor" href="#using-iris-processing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using IRIS Processing</h2>
+
+<p>There are two steps to using IRIS Processing for converting IRIS raw data to film thickness measurements. The first step is to generate a lookup table. The second step is to use the lookup table on the IRIS raw data.</p>
+
+<h3>
+<a id="generating-a-lookup-table" class="anchor" href="#generating-a-lookup-table" aria-hidden="true"><span class="octicon octicon-link"></span></a>Generating a lookup table</h3>
+
+<p>A single script is provided for generating look up tables, called <code>generateLUT</code>. This script has two methods - <code>accurate</code> and <code>relative</code>. The <code>accurate</code> method performs an additional step in order to measure the background film thickness with high precision. The <code>relative</code> method does not perform this step - intead, you must provide the baseline film thickness.</p>
+
+<p>Unfortunately, the <code>accurate</code> method can only be used with films thicker than a certain threshold. If you acquired measurements on IRIS substrates in air, you can use the accurate method for film thicknesses over 80nm. If you aquired measurements on IRIS substrates immersed in water or buffer, this threshold is closer to 200nm. The relative method may be used with any film thickness in any conditions, but <em>a priori</em> knowledge of the film thickness is required. The relative method can provide equally accurate measurements of spot heights if you are confident you know the film thickness precisely (nominally within 5%).</p>
+
+<p>When you run the script, you will be presented with a dialog box with the following parameters that you must provide:</p>
+
+<ul>
+<li>
+<strong>Immersion</strong> - select <code>air</code> or <code>water</code> to indicate the immersion medium.</li>
+<li>
+<strong>Film Material</strong> - Select <code>SiO2</code> or <code>PMMA</code> to indicate the film material.</li>
+<li>
+<strong>Approximate film thickness d</strong> - enter the film thickness to the best of your knowledge, in nanometers. <strong>NOTE:</strong> the <code>accurate</code> method uses this number as an initial guess, and uses nonlinear least squares fitting to accurately measure the average baseline film thickness. In contrast, the <code>relative</code> method will not perform this fitting - it will simply use your input as the ground truth.</li>
+<li>
+<strong>Increment</strong> - This defines the resolution of the lookup table. A higher-resolution table will take longer to generate, but provide more precise measurements.</li>
+<li>
+<strong>look above</strong> and <strong>look below</strong> - Together, these define the span of the lookup table. Using <code>look below = 5</code> and <code>look above = 10</code> will generate a lookup table over the range <code>(d-5, d+10)</code>, where <code>d</code> is the average baseline film thickness. If you select the <code>accurate</code> method, the baseline thickness <code>d</code> will be the measured film thickness (the <code>relative</code> method will set <code>d</code> to the approximate value you provide). A larger range is sometimes required for microarray spots with very high immobilization, but a larger lookup table will take longer to generate.</li>
+<li>
+<strong>Temperature</strong> - Enter the temperature, in degrees celcius.</li>
+<li>
+<strong>Method</strong> - Select either <code>accurate</code> or <code>relative</code>, based on your film thickness and immersion medium (see the beginning of this section for details).</li>
+</ul>
+
+<p>After setting these, you will be presented with a dialog box to open the image you wish to measure. Then, you will be presented with a dialog box to select a mirror file. The mirror image data must have the same height and width as the image you are measuring.</p>
+
+<p>You will next be presented with a window of to select a region of bare Silicon. The purpose of this to account for temporal variations in illumination (exposure time, temporal fluctuations in illumination intensity, etc). Select a region by drawing a rectangle using click-and-drag. You can resize and move this rectangle, which should include only bare Silicon. Try to select a region that is blemish-free - dark patches caused by dust particles can reduce the quality of this measurement. Accept your crop region by double-clicking within your rectangle.</p>
+
+<p>Following this, you will be presented with a similar window, this time asking you to select a region of film. Again, try to select a region of film that is blemish-free, and includes no spots or other features. The thickness of the film in the region you select will either be measured (using curvefitting) or set to the number you provided in the first dialog box, and used as the baseline for the look-up table. Region selection works the same as in the previous windows.</p>
+
+<p>Once you have provided the values and selected the regions, a progressbar will show while the lookup table is generated. Following the completion of this step, film thicknesses across the entire image will be measured and displayed in a window for your inspection. One way to expore these results is with the MATLAB data cursor. Regions which were the limits of the lookup table (either too bright or too dim) are set to 0, and display as black. During this step, see that your spots were all measured appropriately. You may find that some of your spots are partly black. During microarray drying, salt deposition onto the spots is normal. It can result in small patches on the spot which are much (perhaps 2x) brighter than the background. If this is the cause of black regions within your spots, everything is working normally. However, if you have spots with very high immobilization, it is sometimes possible for the spot height to exceed the maximum value of the lookup table. If this seems to be the case, you will need to generate a new lookup table with a larger value of <em>look above</em>.</p>
+
+<p>Once you close the results window, you will be presented with a dialog box asking where you would like to save the results. This results file contains not only the measured film image but also the lookup table that was used.</p>
+
+<h3>
+<a id="applying-a-lookup-table-to-a-single-image" class="anchor" href="#applying-a-lookup-table-to-a-single-image" aria-hidden="true"><span class="octicon octicon-link"></span></a>Applying a lookup table to a single image</h3>
+
+<p>If you want to analyze a batch of chips that all have the same film thickness, it is not necessary to generate a new lookup table for each. Instead, you may use the lookup table from the first image to measure the rest. To measure a single image with a previously generated lookup table, run the script <code>useLUTsingle</code>. You will be asked for the data and mirror files, as before, but also the results file that contains the lookup table you wish to use. The output that will be saved contains not only the height measurements from this image but also the lookup table that was used, and the name of the original results file from which it was copied.</p>
+
+<h3>
+<a id="applying-a-lookup-table-to-a-series-of-images" class="anchor" href="#applying-a-lookup-table-to-a-series-of-images" aria-hidden="true"><span class="octicon octicon-link"></span></a>Applying a lookup table to a series of images</h3>
+
+<p>This feature is not included in this release. The next update will include it however, so stay tuned.</p>
+
+<p>Last updated 25 August 2015 by <a href="mailto:derin@bu.edu">Derin Sevenler</a></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/dd7ler/iris-processing">Iris-processing</a> is maintained by <a href="https://github.com/dd7ler">dd7ler</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
