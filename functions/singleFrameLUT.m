@@ -23,7 +23,7 @@ m = [mean(blueC(:)), mean(greenC(:)), mean(orangeC(:)), mean(redC(:))];
 
 % Then, fit those values with lsqcurvefit
 disp('Fitting background...');
-X = lsqcurvefit(@irisFun, [dApprox/1000 1 0], {medium, film, temperature}, m); % dApprox converted to microns
+
 
 % Generate a 1-color LUT with the fitted values
 disp('generating LUT...');

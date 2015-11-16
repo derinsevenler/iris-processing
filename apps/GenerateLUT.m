@@ -1,15 +1,15 @@
 % GenerateLUT.m
 % 11 May 2015, Derin Sevenler
 
-% This script generates a lookup table for an IRIS image.
+% This script walks you through generating a lookup table for IRIS image processing.
 % This script is only configured to work with TIFF stacks collected using micromanager, 
 % saved in the order (blue, green, orange red). Use only a single image (not a time series)
 % with this function.
 
-%% Get fit parameters
 warning('off','images:initSize:adjustingMag');
 
-[Answer, Cancelled] = getLUTparams();
+%% Get fit parameters
+[p, Cancelled] = getLUTparams();
 if Cancelled
 	disp('Goodbye');
 	return;
@@ -26,7 +26,7 @@ tifFile= [imfolder filesep imfile];
 mirFile= [mirFolder filesep mirFile];
 
 % load the first image to get the self-reference region
-f = figure('Name', 'Please select a region of bare Si');
+f = figure('Name', 'Please select a region of bare Si:');
 im = double(imread(tifFile, 1));
 [~, selfRefRegion] = imcrop(im, median(im(:))*[.8 1.2]);
 pause(0.01); % so the window can close
@@ -42,34 +42,32 @@ for channel = 1:4
 	data(:,:,channel) = In./median(sRef(:));
 end
 
-%% Perform fitting and generate the look up table.
-
-if strcmp(Answer.method,'accurate')
-	[d, bestColor, LUT, X] = singleFrameLUT(data, Answer.medium, Answer.film, Answer.temperature, Answer.dApprox, Answer.minus, Answer.plus, Answer.dt);
-elseif strcmp(Answer.method,'relative')
-	[d, bestColor, LUT, X] = noFitLUT(data, Answer.medium, Answer.film, Answer.temperature, Answer.dApprox, Answer.minus, Answer.plus, Answer.dt);
-else
-	disp(['fitting method ''' Answer.method ''' not found'])
-	return;
-end
+%% Generate the look up table.
+[bestColor, LUT, X] = LUTgenerator(data, p);
 
 % Save the LUT and the Parameters
 results.LUT = LUT;
 results.bestColor = bestColor;
 
-params.dGiven = Answer.dApprox;
-params.plus = Answer.plus;
-params.minus = Answer.minus;
-params.dt = Answer.dt;
-params.medium = Answer.medium;
-params.film = Answer.film;
-params.temperature = Answer.temperature;
+params.dGiven = p.dApprox;
+params.plus = p.plus;
+params.minus = p.minus;
+params.dt = p.dt;
+params.medium = p.medium;
+params.film = p.film;
+params.temperature = p.temperature;
 params.origFile = tifFile;
 
-
-results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'pchip', 0);
-figure; imshow(results.heights,[Answer.dApprox-Answer.minus Answer.dApprox+Answer.plus]);
-
+% Additional parameters for temperature-dependent LUTs
+if strcmp(p.useTemp, 'Yes')
+	% TODO: Interpolate an LUT for this image which is at the right temperature
+	thisLUT(:,1) = LUT.reflectances
+	% TODO: Use the interpolated LUT to save 'heights'
+	results.heights = interp1(thisLUT(:,2), thisLUT(:,1), squeeze(data(:,:,bestColor)), 'linear', 0);
+else
+	results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'linear', 0);
+	figure; imshow(results.heights,[p.dApprox-p.minus p.dApprox+p.plus]);
+end
 saveName = [datestr(now, 'HHMMSS') 'results.mat'];
 [filename, pathname] = uiputfile(saveName, 'Save results as');
 save([pathname filesep filename], 'results', 'params');

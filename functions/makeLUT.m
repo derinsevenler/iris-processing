@@ -1,7 +1,7 @@
 function [bestColor, LUT] = makeLUT(X, medium, film, temperature, minus, plus, dt)
-	% generate a LUT with the parameters X from X(1) nm -minus to +plus, with a step size dt. All in nanometers. 
-	% Typical values may be X, -10nm, +20nm, 0.1nm.
-	% bestColor is 1 for blue, 2 for 
+	% generate a LUT with the parameters X from X(1) -minus to +plus, with a step size dt, in microns.
+	% Typical values 
+	% bestColor is 1 for blue, 2 for green, etc
 	t_base = X(1)*1000; % i.e., the background SiO2 film thickness in nm
 
 	d = ((t_base-minus):dt:(t_base+plus))/1000; % range of thicknesses of interest, in microns.
@@ -12,16 +12,6 @@ function [bestColor, LUT] = makeLUT(X, medium, film, temperature, minus, plus, d
 		Ic(n,:) = irisFun([d(n), X(2), X(3)], {medium, film, temperature});
 		progressbar(n/length(d));
     end
-
-	% figure; hold on;
-    % xlabel('Film thickness (\mum)', 'FontSize',16);
-    % ylabel('Normalized Reflected Intensity', 'FontSize',16);
-    % set(gca, 'FontSize', 16);
-    % plot(d, Ic(:,1), 'b');
-    % plot(d, Ic(:,2), 'g');
-    % plot(d, Ic(:,3), 'color', [.5 .5 0]);
-    % plot(d, Ic(:,4), 'r');
-    % axis([.095, .110, 0.3 .5]);
     
 	% Select the most sensitive color. We don't want a local min or max, so a simple sum of diffs is sufficient.
 	derivs = sum(diff(Ic)); % super easy

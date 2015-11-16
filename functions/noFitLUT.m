@@ -33,7 +33,7 @@ end
 
 
 function ydata = fitParams(x, xdata)
-% irisFun is to be used with lsqcurvefit.
+% fitParams is to be used with lsqcurvefit.
 % xdata{1} is the prescribed film thickness. xdata{2} is the media.
 % x is an array [A, B, C] of parameters for the fresnel equation. 
 % This function is basically the same as 'measure4LED', but formatted to work with lsqcurvefit.

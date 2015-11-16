@@ -3,7 +3,6 @@ function ydata = irisFun(x, xdata)
 % xdata contains detection parameters. ydata is the led intensity.
 % x is an array [A, B, C] of parameters for the fresnel equation. 
 % This function is basically the same as 'measure4LED', but formatted to work with lsqcurvefit.
-% This is only for air right now.
 % This function is in microns!!
 
 [medium, film, temperature] = xdata{:}; % This isn't how xdata is supposed to be used, no big deal.
