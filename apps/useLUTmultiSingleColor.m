@@ -4,7 +4,10 @@
 % fit another image. If you haven't generated a lookup table yet, this
 % function isn't for you. This function only takes single channel images for both mirror and sample.
 
-load('darkMaster.mat');
+%load the darkmaster to subtract from the sample image
+[darkMasterFile, darkMasterFolder] = uigetfile('*.mat', 'Select the file with the dark master that is compatible with your images');
+
+darkMaster = load([darkMastertFolder filesep darkMasterFile]);
 
 % load the lookup table
 [lutFile, lutFolder] = uigetfile('*.mat', 'Select the results file with the lookup table you wish to use');
