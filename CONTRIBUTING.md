@@ -12,5 +12,6 @@ All image processing code in IRIS-Processing is designed to run on MATLAB 2013b 
 * Make sure you fill in the earliest version that you know has the issue.
 * Fork the repository on GitHub
 
+>>>>>>> 54a05eddec661511ab9d2801a46ce8674951300b
 ## Testing
 We love tests! If you can think of a way to test the functionality you are trying to add or fix, write that first. That way, we can (a) compare different solutions quantitatively, and (b) know when a solution is good enough to be selected.
