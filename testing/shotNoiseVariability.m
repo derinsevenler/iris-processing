@@ -54,7 +54,7 @@ end
  
  figure(1)
  histogram(variability.aafo_shot_noise)
- xlabel(['noise as a function of shot noise (' num2str(round(shot_noise_nm,4)) 'nm)']);
+ xlabel(['Variability as a function of shot noise (' num2str(round(shot_noise_nm,4)) 'nm)']);
  ylabel('number of spots')
     ax = gca;
     ax.LineWidth = 2;
