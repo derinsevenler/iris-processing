@@ -56,6 +56,7 @@ end
 %% express the variability as a function of shot noise variability
 
  variability.aafo_shot_noise = variability.measured/shot_noise_nm;
+ variability.params = answer;
  
  
  %% Plot the variability
