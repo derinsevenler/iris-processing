@@ -5,15 +5,23 @@
 % signal_intensity, spot_size, number_of_frames, number_of_spots,
 % slope_LUT, and mirror_intensity.
 
+%% Gather user input to define constants:
+prompt = {'Signal Intensity of a spot','size of spot in pixels', 'number of frames averaged', 'number of spots measured at a time', 'slope of the LUT', 'mirror intensity'};
+dlg_title = 'Input';
+num_lines = 1;
+defaultans = {'5000','860', '50', '1', '102.1103', '10300'};
+answer = inputdlg(prompt,dlg_title,num_lines,defaultans);
+
+
 %% Define expected shot noise
 % this will depend on approximate spot intensity, spot size, number of frames, and number
 % of spots measured
 
 
-signal_intensity = 5000;
-spot_size = 860;
-number_of_frames = 50;
-number_of_spots = 1;
+signal_intensity = str2num(answer{1});
+spot_size = str2num(answer{2});
+number_of_frames = str2num(answer{3});
+number_of_spots = str2num(answer{4});
 
 
 shot_noise = sqrt(signal_intensity/(spot_size * number_of_frames * number_of_spots));
@@ -23,8 +31,8 @@ shot_noise = sqrt(signal_intensity/(spot_size * number_of_frames * number_of_spo
 % the LUT to obtain nm from the normalized shot noise.
 
 
-slope_LUT = 102.1103; %nm/normalized reflectivity
-mirror_intensity = 10300;
+slope_LUT = str2num(answer{5}); %nm/normalized reflectivity
+mirror_intensity = str2num(answer{6});
 
 norm_shot_noise = shot_noise/mirror_intensity;
 shot_noise_nm = norm_shot_noise * slope_LUT;
