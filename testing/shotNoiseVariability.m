@@ -62,6 +62,17 @@ end
  %% Plot the variability
  
  figure(1)
+ subplot(1,2,1)
+ histogram(variability.measured, 7)
+  xlabel('Measured Variability in nm');
+ ylabel('number of spots')
+    ax = gca;
+    ax.LineWidth = 2;
+    ax.FontSize = 16;
+    ax.FontWeight = 'bold';
+    ax.Box = 'off';
+ 
+ subplot(1,2,2)
  histogram(variability.aafo_shot_noise)
  xlabel(['Variability as a function of shot noise (' num2str(round(shot_noise_nm,4)) 'nm)']);
  ylabel('number of spots')
