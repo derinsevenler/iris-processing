@@ -21,7 +21,7 @@ nColor=1;
 im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
-g=figure('Name','Plase select a smaller region you wish to analyze');
+g=figure('Name','Please select a smaller region you wish to analyze');
 [im1Small,dataCord]=imcrop(im1,median(double(im1(:)))*[.8 1.2]);
 close(g);
 
@@ -128,15 +128,15 @@ Diff=(annulusLUT-spotsLUT)*-1;
 
 
 %%%% save mat
-saveName='images.mat';
-[filename, pathname] = uiputfile(saveName, 'Save results as');
-save([pathname filesep filename], 'imLUT');
+%saveName='images.mat';
+%[filename, pathname] = uiputfile(saveName, 'Save results as');
+%save([pathname filesep filename], 'imLUT');
 
 saveName='spotsRaw.mat';
 [filename, pathname] = uiputfile(saveName, 'Save results as');
 save([pathname filesep filename], 'spots');
 
-saveName='spotsNet,mat';
+saveName='spotsNet.mat';
 [filename, pathname] = uiputfile(saveName, 'Save results as');
 save([pathname filesep filename], 'Diff');
 
