@@ -21,24 +21,25 @@ nColor=1;
 im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
-g=figure('Name','Please select a smaller region you wish to analyze');
-[im1Small,dataCord]=imcrop(im1,median(double(im1(:)))*[.8 1.2]);
-close(g);
 
 f=figure('Name','Please select a region of bare Si');
-[~, selfRefRegion] = imcrop(im1Small);
+[~, selfRefRegion] = imcrop(im1);
 close(f);
+%%
+numberofblocks = inputdlg('how many blocks do you want to analyze in this image?');
 
-
-
+%%
 for channel = 2:numIm   
     I = imread(tifFile,channel);
     im=double(I)./double(mir);
     count=1;
-    im=imcrop(im,dataCord);
+    
+  
     %%%choose one: regWet uses the phase correlation method
-    %%Ial,delta(channel,:),angle(channel,:)]=regWet(im1Small,im,im,count);
-    Ial=points(im1Small,im);
+    
+    [Ial] = markerAligment(im1, im);
+    
+    %Ial=points(im1Small,im);
     %%%%%
     sRef = imcrop(Ial, selfRefRegion);
     Ialpost= Ial./median(sRef(:));
