@@ -22,25 +22,31 @@ im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
 
-f=figure('Name','Please select a region of bare Si');
-[~, selfRefRegion] = imcrop(im1);
-close(f);
-%%
+d = figure('Name', 'This is the image you will analyze');
+imshow(im1, median(im1(:))*[0.8 1.2]);
 numberofblocks = inputdlg('how many blocks do you want to analyze in this image?');
+close(d);
+%%
+%repeat alignment, analysis, and saving for each block in the image
+for blocknumber = 1:str2num(numberofblocks{1});
+clear align Ial I 
+    
+e = figure('Name',['Please select block ']);% num2str(blocknumber) 'to analyze']);
+[im1Small, cropCord] = imcrop(im1);
+close(e);
+
+f=figure('Name','Please select a region of bare Si');
+[~, selfRefRegion] = imcrop(im1Small);
+close(f);
 
 %%
 for channel = 2:numIm   
     I = imread(tifFile,channel);
     im=double(I)./double(mir);
-    count=1;
+    imsmall = imcrop(im, cropCord);
+ 
+    [Ial] = Alignmentchecker(im1Small, imsmall);
     
-  
-    %%%choose one: regWet uses the phase correlation method
-    
-    [Ial] = markerAligment(im1, im);
-    
-    %Ial=points(im1Small,im);
-    %%%%%
     sRef = imcrop(Ial, selfRefRegion);
     Ialpost= Ial./median(sRef(:));
     align(:,:,channel)=Ialpost;
@@ -62,11 +68,10 @@ im1Old=align(:,:,1);
          maximum=20;
          
          for n = 1:numSpots
-             g = figure; 
+              
     
                g=figure('Name','crop one region containing all the spots you wish to analyze');
                [spotR, spotRect(n,:)] = imcrop(im1Old, median(double(im1Old(:)))*[.8, 1.2]); 
-               pause(0.05);
                close(g);
                
                spotad=imadjust(spotR);
@@ -109,7 +114,7 @@ spotsLUT= interp1(LUT(:,2), LUT(:,1), spots.heights, 'nearest', 0);
 annulusLUT= interp1(LUT(:,2), LUT(:,1), annulus.heights, 'nearest', 0);
 
 Diff=(annulusLUT-spotsLUT)*-1;
-
+end
 % % %%===============================================================================================
 %% display and save results
    
@@ -141,3 +146,4 @@ saveName='spotsNet.mat';
 [filename, pathname] = uiputfile(saveName, 'Save results as');
 save([pathname filesep filename], 'Diff');
 
+end
