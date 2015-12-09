@@ -120,12 +120,13 @@ im1Old=align(:,:,1);
      end  
       end
  
-      
-[lutFile, lutFolder] = uigetfile('*.mat', 'Select the results file with the lookup table you wish to use');
-lutF = load([lutFolder filesep lutFile]);
-results.bestColor = lutF.results.bestColor;
-bestColor=lutF.results.bestColor;
-LUT=lutF.results.LUT;
+if blocknumber == 1
+    [lutFile, lutFolder] = uigetfile('*.mat', 'Select the results file with the lookup table you wish to use');
+    lutF = load([lutFolder filesep lutFile]);
+    results.bestColor = lutF.results.bestColor;
+    bestColor=lutF.results.bestColor;
+    LUT=lutF.results.LUT;
+end
 
 
 spotsLUT= interp1(LUT(:,2), LUT(:,1), spots.heights{blocknumber}, 'nearest', 0);
