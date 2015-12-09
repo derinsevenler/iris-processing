@@ -14,7 +14,7 @@ z = 0;
 error = (double(Ial)-double(im1)).^2;
 errorppixel = sum(error(:))/numel(im1);
 
-i = figure('Position', [700 10 500 500], 'Name', ['Histogram of the difference squared with error per pixel = ' num2str(errorppixel)]);
+i = figure('Position', [800 10 700 500], 'Name', ['Histogram of the difference squared with error per pixel = ' num2str(errorppixel)]);
 histogram(error);
 
 h = figure('Position', [10 10 700 900], 'Name', 'Are the images aligned well enough?');
@@ -43,7 +43,7 @@ while z == 1
     error = (double(Ial)-double(im1)).^2;
     errorppixel = sum(error(:))/numel(im1);
     
-    i = figure('Position', [700 10 500 500], 'Name', ['Histogram of the difference squared with error per pixel = ' num2str(errorppixel)]);
+    i = figure('Position', [800 10 700 500], 'Name', ['Histogram of the difference squared with error per pixel = ' num2str(errorppixel)]);
     histogram(error);
     
     h = figure('Position', [10 10 700 900], 'Name', 'Are the images aligned well enough?');

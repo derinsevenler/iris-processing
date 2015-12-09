@@ -98,7 +98,7 @@ im1Old=align(:,:,1);
      for g=1:col
               centCol=matxy(1:row,1:2,g);
               radCol=matxy(1:row,3,g);
-              [annulus.heights(1:row,channel,g),spots.heights(1:row,channel,g)]= spotDet(filt(:,:,channel),centCol,radCol,spotRect,channel,row);
+              [annulus.heights(1:row,g,channel),spots.heights{blocknumber}(1:row,g,channel)]= spotDet(filt(:,:,channel),centCol,radCol,spotRect,channel,row);
      end  
       end
  
@@ -109,28 +109,28 @@ results.bestColor = lutF.results.bestColor;
 bestColor=lutF.results.bestColor;
 LUT=lutF.results.LUT;
 
- 
-spotsLUT= interp1(LUT(:,2), LUT(:,1), spots.heights, 'nearest', 0);
+
+spotsLUT= interp1(LUT(:,2), LUT(:,1), spots.heights{blocknumber}, 'nearest', 0);
 annulusLUT= interp1(LUT(:,2), LUT(:,1), annulus.heights, 'nearest', 0);
 
-Diff=(annulusLUT-spotsLUT)*-1;
+Diff{blocknumber}=(annulusLUT-spotsLUT)*-1;
 end
 % % %%===============================================================================================
 %% display and save results
    
-    name1=strcat('Diff.xlsx');
-    name2=strcat('Annulus.xlsx');
-    name3=strcat('Spots.xlsx');
+%    name1=strcat('Diff.xlsx');
+%    name2=strcat('Annulus.xlsx');
+%    name3=strcat('Spots.xlsx');
     
-    for g=1:row
-    numSheet=strcat('column',num2str(g));    
-    S=Diff(:,:,g,color);
-    xlswrite(name1,S,numSheet);
-    R=spots.heights(:,:,g,color);  
-    xlswrite(name3,R,numSheet);
-    A=annulus.heights(:,:,g,color);
-    xlswrite(name2,A,numSheet);
-    end 
+%    for g=1:row
+%    numSheet=strcat('column',num2str(g));    
+%    S=Diff(:,:,g,color);
+%    xlswrite(name1,S,numSheet);
+%    R=spots.heights(:,:,g,color);  
+%    xlswrite(name3,R,numSheet);
+%    A=annulus.heights(:,:,g,color);
+%    xlswrite(name2,A,numSheet);
+%   end 
 
 
 %%%% save mat
@@ -146,4 +146,3 @@ saveName='spotsNet.mat';
 [filename, pathname] = uiputfile(saveName, 'Save results as');
 save([pathname filesep filename], 'Diff');
 
-end
