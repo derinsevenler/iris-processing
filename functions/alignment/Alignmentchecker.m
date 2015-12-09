@@ -8,20 +8,16 @@ function [Ial] = Alignmentchecker(im1, im)
 
 
 z = 0;
-%regwet or features?  Regwet is better for now.
-[Ial,delta,angle]=regWet(im1,im,im);
+Ial = im;
+
+%[Ial,delta,angle]=regWet(im1,im,im);
 error = (double(Ial)-double(im1)).^2;
 errorpPixel = sum(error(:))/numel(im1);
 
-%[Ir]=features(im1,im);
-%errorFeatures = (double(Ir)-double(im1)).^2;
-%errorFeaturespPixel = sum(errorFeatures(:))/numel(im1);
 
 i = figure('Position', [800 10 700 500], 'Name', ['Histogram of the difference squared with error per pixel = ' num2str(errorpPixel)]);
 histogram(error);
 
-%j = figure('Position', [800 600 700 500], 'Name', ['Histogram of the difference squared with error per pixel = ' num2str(errorFeaturespPixel)]);
-%histogram(errorFeatures);
 
 h = figure('Position', [10 10 700 900], 'Name', 'Are the images aligned well enough?');
 
@@ -45,7 +41,8 @@ waitfor(h)
 close(i)
 
 while z == 1
-    Ial=points(im1,im);
+    [Ial,delta,angle]=regWet(im1,im,im);
+    %Ial=points(im1,im);
     error = (double(Ial)-double(im1)).^2;
     errorpPixel = sum(error(:))/numel(im1);
     

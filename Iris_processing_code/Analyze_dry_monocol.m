@@ -21,17 +21,30 @@ nColor=1;
 im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
+alignFullFOV(:,:,1) = im1;
 
+%%%Perform initial alignment over full FOV
+for channel = 2:numIm   
+    I = imread(tifFile,channel);
+    im=double(I)./double(mir);
+    
+    [Ial]=features(im1,im);
+ 
+    alignFullFOV(:,:,channel)=Ial;
+    progressbar(channel/numIm)
+end
+
+%%%View full FOV to count how many blocks to be analyzed.
 d = figure('Name', 'This is the image you will analyze');
 imshow(im1, median(im1(:))*[0.8 1.2]);
 numberofblocks = inputdlg('how many blocks do you want to analyze in this image?');
 close(d);
 %%
-%repeat alignment, analysis, and saving for each block in the image
+%%%Check alignment and preform analysis for each block in the image
 for blocknumber = 1:str2num(numberofblocks{1});
-clear align Ial I 
+    clear align Ial
     
-e = figure('Name',['Please select block ']);% num2str(blocknumber) 'to analyze']);
+e = figure('Name',['Please select block ' num2str(blocknumber) 'to analyze']);
 [im1Small, cropCord] = imcrop(im1);
 close(e);
 
@@ -41,9 +54,7 @@ close(f);
 
 %%
 for channel = 2:numIm   
-    I = imread(tifFile,channel);
-    im=double(I)./double(mir);
-    imsmall = imcrop(im, cropCord);
+    imsmall = imcrop(alignFullFOV(:,:,channel), cropCord);
  
     [Ial] = Alignmentchecker(im1Small, imsmall);
     
