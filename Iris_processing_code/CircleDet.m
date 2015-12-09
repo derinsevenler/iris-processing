@@ -12,10 +12,11 @@ imshow(data,median(double(data(:)))*[.8 1.2]);
 %%%detect the radius of one spot with imdistline
 h=imdistline(gca);
 position = wait(h);
-asw = inputdlg('Maximum and minumum radius');
-num=str2num(asw{1});
-minn=num(1);
-maxx=num(2);
+defaultans = {'15','20'};
+asw = inputdlg({'Minimum radius', 'Maximum radius'},'Spot radius', 1, defaultans);
+minn=str2num(asw{1});
+maxx=str2num(asw{2});
+
 delete(h);
 close(gcf);
 

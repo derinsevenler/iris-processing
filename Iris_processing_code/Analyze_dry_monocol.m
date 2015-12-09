@@ -59,7 +59,7 @@ f=figure('Name','Please select a region of bare Si');
 [~, selfRefRegion] = imcrop(im1Small);
 close(f);
 
-%%
+
 for channel = 2:numIm   
     imsmall = imcrop(alignFullFOV(:,:,channel), cropCord);
  
