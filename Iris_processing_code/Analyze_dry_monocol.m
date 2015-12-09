@@ -21,13 +21,20 @@ nColor=1;
 im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
+
+%%%Select the FOV you want to use for the full analysis (this helps with
+%%%the feature alignment. Different crops will make it work.
+j = figure('Name','Please select the full FOV you want to use for this analysis ');
+[im1, cropFOVCord] = imcrop(im1);
+close(j);
 alignFullFOV(:,:,1) = im1;
+
 
 %%%Perform initial alignment over full FOV
 for channel = 2:numIm   
     I = imread(tifFile,channel);
     im=double(I)./double(mir);
-    
+    %im = imcrop(im,cropFOVCord);
     [Ial]=features(im1,im);
  
     alignFullFOV(:,:,channel)=Ial;
