@@ -1,46 +1,60 @@
 %%% This code works on a stack of n monocolor dry images. 
 %% =============================================================================================
 clc
-clear all
 close all
 % Get the mirror image file info
 
-[file, folder] = uigetfile('*.*', 'Select the mirror file (TIFF image stack also)');
+[file, folder] = uigetfile('*.*', 'Select the mirror file');
 mirFile= [folder filesep file];
 
+
 % Get the tiff Image
-[file, folder] = uigetfile('*.*', 'Select the data file (TIFF image stack also)');
-tifFile= [folder filesep file];
+[dataFile, dataFolder]= uigetfile('*.*', 'Select the 4 files (TIFF image stack also)', 'MultiSelect', 'on');
+
+
+
+%imgSet = imageSet(dataFolder);
+%im1 = read(imgSet,1);
+%montage(imgSet.ImageLocation, 'DisplayRange', median(im1(:))*[0.8 1.2]) ;
+
+for i = 1:numel(dataFile)
+    
+tifFile= fullfile(dataFolder, dataFile{i});
 
 info=imfinfo(tifFile);
 numIm=numel(info);
 
-%% ===================================================================================================================
-%%%Alignment
+
+%%%Alignment of the full FOV
 color=1;
 nColor=1;
 im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
 
-%%%Select the FOV you want to use for the full analysis (this helps with
+%%%Select the 4 blocks you want to use for the full analysis (this helps with
 %%%the feature alignment. Different crops will make it work.
-j = figure('Name','Please select the full FOV you want to use for this analysis ');
+j = figure('Name','Please select the 4 block FOV you want to use from this image ');
 [im1, cropFOVCord] = imcrop(im1);
 close(j);
-alignFullFOV(:,:,1) = im1;
+alignedBlocks{i}(:,:,1) = im1;
 
 
 %%%Perform initial alignment over full FOV
 for channel = 2:numIm   
     I = imread(tifFile,channel);
     im=double(I)./double(mir);
-    %im = imcrop(im,cropFOVCord);
+    im = imcrop(im, cropFOVCord);
     [Ial]=features(im1,im);
  
-    alignFullFOV(:,:,channel)=Ial;
+    alignedBlocks{i}(:,:,channel)=Ial;
     progressbar(channel/numIm)
 end
+end
+
+%stitch images
+slide = imageStitch(alignedBlocks);
+im1 = slide(:,:,1);
 
 %%%View full FOV to count how many blocks to be analyzed.
 d = figure('Name', 'This is the image you will analyze');
@@ -62,7 +76,7 @@ close(f);
 
 
 for channel = 2:numIm   
-    imsmall = imcrop(alignFullFOV(:,:,channel), cropCord);
+    imsmall = imcrop(slide(:,:,channel), cropCord);
  
     [Ial] = Alignmentchecker(im1Small, imsmall);
     
