@@ -72,6 +72,7 @@ for channel = 2:numIm
     progressbar(channel/numIm)
 end
 
+sRef=imcrop(im1Small,selfRefRegion); 
 align(:,:,1)= im1Small./median(sRef(:));
 im1Old=align(:,:,1);
 
