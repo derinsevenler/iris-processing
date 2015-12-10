@@ -17,13 +17,7 @@ title('horizontal profile')
 axis tight
 
 %% Estimate spot spacing by autocorrelation
-% Ideally the spots would be periodicaly spaced consistently printed, but
-% in practice they tend to have different sizes and intensities, so the
-% horizontal profile is irregular. We can use autocorrelation to enhance
-% the self similarity of the profile. The smooth result promotes peak
-% finding and estimation of spot spacing. The *Signal Processing Toolbox*
-% allows easy computation of the autocorrelation function using the |xcov|
-% command.
+
 
 ac = xcov(xProfile);                        %unbiased autocorrelation
 f3 = figure('position',[-3 427 569 94]);
@@ -39,11 +33,7 @@ title('autocorrelation of profile')
 axis tight
 
 %% Remove background morphologically
-% We can use the spacing estimate to help design a filter to remove the
-% background noise from the intensity profile. We do this with the
-% |imtophat| function from the *Image Processing Toolbox*.  The |strel|
-% command creates a simple rectangular 1D window or line shaped structuring
-% element.
+
 seLine = strel('line',estPeriod,0);
 xProfile2 = imtophat(xProfile,seLine);
 f4 = figure('position',[40 443 285 76]);
@@ -53,17 +43,15 @@ axis tight
 
 %% Find peaks
 minPeakWidth = median(ra) - 3*std(ra);
-%maxPeakWidth = median(ra) + 3*std(ra);
-[pks,xCenters] = findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth); %'MaxPeakWidth', maxPeakWidth);
-findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth)
+maxPeakWidth = median(ra) + 3*std(ra);
+[pks,xCenters] = findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.0075);%, 'MaxPeakWidth', maxPeakWidth);
+findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.0075);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 %% Transpose and repeat
 % We just did the analysis on the vertical grid. Now we want to do the same
 % for the horizontal spacing. To do this, we simply transpose the image and
-% repeat all the steps used above. This time without intermediate graphics
-% display commands in order to summarize the mathematical steps of this
-% algorithm.
+% repeat all the steps used above.
 
 yProfile = mean(spotBlock');                        %peak profile
 ac = xcov(yProfile);                        %cross correlation
@@ -74,8 +62,8 @@ estPeriod = round(median(diff(maxima)));     %spacing estimate
 seLine = strel('line',estPeriod,0);
 yProfile2 = imtophat(yProfile,seLine);      %background removed
 
-[pks,yCenters] = findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth); %'MaxPeakWidth', maxPeakWidth);
-findpeaks(xProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth)
+[pks,yCenters] = findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.0075);%, 'MaxPeakWidth', maxPeakWidth); 
+findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.0075);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 
@@ -83,6 +71,21 @@ findpeaks(xProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth)
 %% creating the center matrix
 totx = repmat(xCenters,row,1);
 toty = repmat(yCenters',1,col);
+
+%% Pad totx and toty to match the size of the col and row,to avoid plotting errors and show and failed spot detection.
+if size(totx,1)<row
+    totx = padarray(totx,[row-size(totx,1), 0], NaN, 'post');
+end
+if size(toty,1)<row
+    toty = padarray(toty,[row-size(toty,1), 0], NaN, 'post');
+end
+if size(totx,2)<col
+    totx = padarray(totx,[0, col-size(totx,2)], NaN, 'post');
+end
+if size(toty,2)<col
+    toty = padarray(toty,[0, col-size(toty,2)], NaN, 'post');
+end
+
 
 %% Show centers of calculated spots and get user input on if it is good enough
 xy = figure('Position', [200 200 500 500], 'Name', 'Are the calculated spot centers lining up with the spots?');
@@ -213,8 +216,10 @@ figure(3);
 imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
-hold on
+
 plot(cent(:,1),cent(:,2),'go'); %%cent contains just the dectected circles that have a correspondance in the  grid
+hold off
+
 %legend('Grid','Detected','True');
 %% giving the full FOV coordinates instead of the local coordinates.
 cent(:,1)=cent(:,1)+spotBlockRect(1);
