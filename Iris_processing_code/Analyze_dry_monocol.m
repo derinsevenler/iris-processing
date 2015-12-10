@@ -1,6 +1,7 @@
 %%% This code works on a stack of n monocolor dry images. 
 %% =============================================================================================
 clc
+clear all
 close all
 % Get the mirror image file info
 
@@ -129,10 +130,12 @@ im1Old=align(:,:,1);
        
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-     for g=1:col
+    progressbar('Spot Measurements') 
+    for g=1:col
               centCol=matxy(1:row,1:2,g);
               radCol=matxy(1:row,3,g);
               [annulus.heights(1:row,g,channel),spots.heights{blocknumber}(1:row,g,channel)]= spotDet(filt(:,:,channel),centCol,radCol,spotBlockRect,channel,row);
+              progressbar(g/col)
      end  
       end
  
