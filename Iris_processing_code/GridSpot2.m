@@ -81,8 +81,8 @@ findpeaks(xProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth)
 
 
 %% creating the center matrix
-totx = repmat(xCenters',1,col);
-toty = repmat(yCenters,row,1);
+totx = repmat(xCenters,row,1);
+toty = repmat(yCenters',1,col);
 
 %% Show centers of calculated spots and get user input on if it is good enough
 xy = figure('Position', [200 200 500 500], 'Name', 'Are the calculated spot centers lining up with the spots?');
@@ -209,13 +209,14 @@ ra(idxF,:)=[];
 
 
 %% show the grid and the detected spots
-figure(3);imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
+figure(3);
+imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 hold on
 plot(cent(:,1),cent(:,2),'go'); %%cent contains just the dectected circles that have a correspondance in the  grid
 %legend('Grid','Detected','True');
-%% some things I don't know
+%% giving the full FOV coordinates instead of the local coordinates.
 cent(:,1)=cent(:,1)+spotBlockRect(1);
 cent(:,2)=cent(:,2)+spotBlockRect(2);
 center=cent;
