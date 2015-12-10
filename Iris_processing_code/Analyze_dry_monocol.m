@@ -2,6 +2,7 @@
 %% =============================================================================================
 clc
 clear all
+close all
 % Get the mirror image file info
 
 [file, folder] = uigetfile('*.*', 'Select the mirror file (TIFF image stack also)');
@@ -59,7 +60,7 @@ f=figure('Name','Please select a region of bare Si');
 [~, selfRefRegion] = imcrop(im1Small);
 close(f);
 
-%%
+
 for channel = 2:numIm   
     imsmall = imcrop(alignFullFOV(:,:,channel), cropCord);
  
@@ -89,23 +90,23 @@ im1Old=align(:,:,1);
               
     
                g=figure('Name','crop one region containing all the spots you wish to analyze');
-               [spotR, spotRect(n,:)] = imcrop(im1Old, median(double(im1Old(:)))*[.8, 1.2]); 
+               [spotBlock, spotBlockRect(n,:)] = imcrop(im1Old, median(double(im1Old(:)))*[.8, 1.2]); 
                close(g);
                
-               spotad=imadjust(spotR);
+               spotad=imadjust(spotBlock);
                level=graythresh(spotad);
                binary=im2bw(spotad,level);
                f=0;
               [center,rad,minimum,maximum]= CircleDet(binary,minimum,maximum,f); 
          end
       end
-%   
+%%   
 % % %%%% Calculate spots and annulus values
 % %  
       for channel=1:numIm      
         
             if channel==1
-             [center,rad,centerOld,radOld,row,col,gridx,gridy]=GridSpot2(center,rad,spotR,spotRect);
+             [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotBlock,spotBlockRect);
           %%% sorting detect spots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           matxy=sorting(center,rad,gridx,gridy,row,col);
        
@@ -116,7 +117,7 @@ im1Old=align(:,:,1);
      for g=1:col
               centCol=matxy(1:row,1:2,g);
               radCol=matxy(1:row,3,g);
-              [annulus.heights(1:row,g,channel),spots.heights{blocknumber}(1:row,g,channel)]= spotDet(filt(:,:,channel),centCol,radCol,spotRect,channel,row);
+              [annulus.heights(1:row,g,channel),spots.heights{blocknumber}(1:row,g,channel)]= spotDet(filt(:,:,channel),centCol,radCol,spotBlockRect,channel,row);
      end  
       end
  
