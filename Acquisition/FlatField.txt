@@ -1,0 +1,32 @@
+// OpenDialog Demo
+//
+// This macro demonstrates how do use the 
+// File.openDialog() macro function.
+
+  pathReadBias = File.openDialog("Select the read bias frame");
+  //open(path); // open the file
+  dirReadBias = File.getParent(pathReadBias);
+  nameReadBias = File.getName(pathReadBias);
+
+open(pathReadBias);
+
+
+  pathFlatField = File.openDialog("Select the flat field frame");
+  //open(path); // open the file
+  dirFlatField = File.getParent(pathFlatField);
+  nameFlatField = File.getName(pathFlatField);
+
+open(pathFlatField);
+
+//Opens all of the images within a common directory, will pop up a window and ask to select the folder containing the imagesmacro "Open All Files" {DIR=getDirectory("Choose a Directory");
+
+ // Create a directory in DIR for flat fielded images
+  myDir = dirFlatField+File.separator+"flatfielded"+File.separator;
+  File.makeDirectory(myDir);
+  if (!File.exists(myDir))
+      exit("Unable to create directory");
+  print("saving to");
+  print(myDir);
+NAMES=getFileList(DIR);for (i=0; i<NAMES.length; i++) {open(DIR+NAMES[i]);	original = getImageID();
+	title = NAMES[i];//Opens the image calculator and subtracts the shading image from the active tile	imageCalculator ("Difference create stack", original, nameReadBias);	result = getImageID();//Opens the image calculator and divides the result of the subtraction by the background image.	imageCalculator ("Divide create 32-bit stack", result, nameFlatField);//Saves the result of the division to the "corrected_tiles" folder, preserving the xy position in the image name
+	saveAs("tiff", myDir+title);	close();	selectImage(original);	close();	selectImage(result);	close();}}
