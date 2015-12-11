@@ -160,10 +160,11 @@ if str2num(numberofblocks{1}) == 1
     rows = str2num(format{2});
     columns = str2num(format{3});
     
-    Difftemp{1} = rot90(Difftemp{1});
+    %rotate such that the left side is the top
+    Difftemp{1} = rot90(Difftemp{1}, 3);
     Diff = reformatData(Difftemp{1}, numberOfBlocks, rows, columns);
     
-    spotsTemp.heights{1} = rot90(spotsTemp.heights{1});
+    spotsTemp.heights{1} = rot90(spotsTemp.heights{1},3);
     spots = reformatData(spotsTemp.heights{1}, numberOfBlocks,rows,columns);
 else
     h = warndlg('The data was not reformatted and was therefore left as is.')
@@ -172,32 +173,15 @@ end
 
 % % %%===============================================================================================
 %% display and save results
-   
-%    name1=strcat('Diff.xlsx');
-%    name2=strcat('Annulus.xlsx');
-%    name3=strcat('Spots.xlsx');
-    
-%    for g=1:row
-%    numSheet=strcat('column',num2str(g));    
-%    S=Diff(:,:,g,color);
-%    xlswrite(name1,S,numSheet);
-%    R=spots.heights(:,:,g,color);  
-%    xlswrite(name3,R,numSheet);
-%    A=annulus.heights(:,:,g,color);
-%    xlswrite(name2,A,numSheet);
-%   end 
+clear results  
+results.slide = slide;
+results.spotsNet = Diff;
+results.spotsRaw = spots;
 
 
-%%%% save mat
-%saveName='images.mat';
-%[filename, pathname] = uiputfile(saveName, 'Save results as');
-%save([pathname filesep filename], 'imLUT');
-
-saveName='spotsRaw.mat';
+saveName='results.mat';
 [filename, pathname] = uiputfile(saveName, 'Save results as');
-save([pathname filesep filename], 'spots');
+save([pathname filesep filename], 'results');
 
-saveName='spotsNet.mat';
-[filename, pathname] = uiputfile(saveName, 'Save results as');
-save([pathname filesep filename], 'Diff');
+
 
