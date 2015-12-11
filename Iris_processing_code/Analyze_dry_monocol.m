@@ -4,51 +4,61 @@ clc
 clear all
 close all
 % Get the mirror image file info
-
-[file, folder] = uigetfile('*.*', 'Select the mirror file (TIFF image stack also)');
+[file, folder] = uigetfile('*.*', 'Select the mirror file');
 mirFile= [folder filesep file];
 
-% Get the tiff Image
-[file, folder] = uigetfile('*.*', 'Select the data file (TIFF image stack also)');
-tifFile= [folder filesep file];
+% Get the tiff Image or images if you want to do a full slide
+[dataFile, dataFolder]= uigetfile('*.*', 'Select the 4 files (TIFF image stack also)', 'MultiSelect', 'on');
 
+
+%%% open, crop the ROI, and align all images %%%
+for i = 1:numel(dataFile)
+    
+tifFile= fullfile(dataFolder, dataFile{i});
+
+%number of timesteps
 info=imfinfo(tifFile);
 numIm=numel(info);
 
-%% ===================================================================================================================
-%%%Alignment
+
+%Alignment of each image
 color=1;
 nColor=1;
 im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
 
-%%%Select the FOV you want to use for the full analysis (this helps with
-%%%the feature alignment. Different crops will make it work.
-j = figure('Name','Please select the full FOV you want to use for this analysis ');
+%Select the regions of each image you want to concatenate. These will be
+%aligned and concatenated.
+j = figure('Name','Please select the 4 block FOV you want to use from this image ');
 [im1, cropFOVCord] = imcrop(im1);
 close(j);
-alignFullFOV(:,:,1) = im1;
+alignedBlocks{i}(:,:,1) = im1;
 
 
 %%%Perform initial alignment over full FOV
 for channel = 2:numIm   
     I = imread(tifFile,channel);
     im=double(I)./double(mir);
-    %im = imcrop(im,cropFOVCord);
+    im = imcrop(im, cropFOVCord);
     [Ial]=features(im1,im);
  
-    alignFullFOV(:,:,channel)=Ial;
+    alignedBlocks{i}(:,:,channel)=Ial;
     progressbar(channel/numIm)
 end
+end
+
+%stitch images into a full slide
+slide = imageStitch(alignedBlocks);
+im1 = slide(:,:,1);
 
 %%%View full FOV to count how many blocks to be analyzed.
 d = figure('Name', 'This is the image you will analyze');
 imshow(im1, median(im1(:))*[0.8 1.2]);
 numberofblocks = inputdlg('how many blocks do you want to analyze in this image?');
 close(d);
-%%
-%%%Check alignment and preform analysis for each block in the image
+
+%% Check alignment and preform analysis for each block in the image
 for blocknumber = 1:str2num(numberofblocks{1});
     clear align Ial
     
@@ -62,7 +72,7 @@ close(f);
 
 
 for channel = 2:numIm   
-    imsmall = imcrop(alignFullFOV(:,:,channel), cropCord);
+    imsmall = imcrop(slide(:,:,channel), cropCord);
  
     [Ial] = Alignmentchecker(im1Small, imsmall);
     
@@ -104,6 +114,7 @@ im1Old=align(:,:,1);
 %%   
 % % %%%% Calculate spots and annulus values
 % %  
+progressbar('timesteps','Spot Measurements') 
       for channel=1:numIm      
         
             if channel==1
@@ -115,11 +126,14 @@ im1Old=align(:,:,1);
        
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-     for g=1:col
+    
+    for g=1:col
               centCol=matxy(1:row,1:2,g);
               radCol=matxy(1:row,3,g);
-              [annulus.heights(1:row,g,channel),spots.heights{blocknumber}(1:row,g,channel)]= spotDet(filt(:,:,channel),centCol,radCol,spotBlockRect,channel,row);
-     end  
+              [annulus.heights(1:row,g,channel),spotsTemp.heights{blocknumber}(1:row,g,channel)]= spotDet(filt(:,:,channel),centCol,radCol,spotBlockRect,channel,row);
+              progressbar([],g/col)
+    end  
+     progressbar(channel/numIm, [])
       end
  
 if blocknumber == 1
@@ -131,11 +145,31 @@ if blocknumber == 1
 end
 
 
-spotsLUT= interp1(LUT(:,2), LUT(:,1), spots.heights{blocknumber}, 'nearest', 0);
+spotsLUT= interp1(LUT(:,2), LUT(:,1), spotsTemp.heights{blocknumber}, 'nearest', 0);
 annulusLUT= interp1(LUT(:,2), LUT(:,1), annulus.heights, 'nearest', 0);
 
-Diff{blocknumber}=(annulusLUT-spotsLUT)*-1;
+Difftemp{blocknumber}=(annulusLUT-spotsLUT)*-1;
 end
+
+%% reformat data if the entire slide was analyzed at once (ie number of blocks = 1)
+if str2num(numberofblocks{1}) == 1
+    default = {'16', '10', '10'};
+    prompt = {'how many blocks did you just analyze?', 'rows per block', 'columns per block'};
+    format=inputdlg(prompt,'format of slide', 1, default);
+    numberOfBlocks = str2num(format{1});
+    rows = str2num(format{2});
+    columns = str2num(format{3});
+    
+    Difftemp{1} = rot90(Difftemp{1});
+    Diff = reformatData(Difftemp{1}, numberOfBlocks, rows, columns);
+    
+    spotsTemp.heights{1} = rot90(spotsTemp.heights{1});
+    spots = reformatData(spotsTemp.heights{1}, numberOfBlocks,rows,columns);
+else
+    h = warndlg('The data was not reformatted and was therefore left as is.')
+    
+end
+
 % % %%===============================================================================================
 %% display and save results
    

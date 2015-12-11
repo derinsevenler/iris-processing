@@ -3,6 +3,7 @@ c = spotRt(1);
 r = spotRt(2);
 [rr,cc]= meshgrid(1:size(filt,1), 1:size(filt,2));
 
+
 for k=1:rows
      rak=ra(k);
      roOuter=rak*1.5;  
@@ -21,5 +22,6 @@ for k=1:rows
    	 annBlueVal(k)= median(Van);
      %figure(n+1);
      %imshow(temp2);
+     
      
 end
