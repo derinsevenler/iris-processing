@@ -3,13 +3,14 @@ function [ outputData ] = reformatData( inputData, numberOfBlocks, rows, columns
 %   Detailed explanation goes here
 
 
-
+n = 1;
 
 %split the columns
 for i = 1: size(inputData,1)/rows
     dataSingleRow = inputData((1+rows*(i-1)):rows*i,:,:);
     for j = 1 : size(dataSingleRow,2)/columns
-    outputData{i*j} = dataSingleRow(:,(1+columns*(j-1)):columns*j,:);
+    outputData{n} = dataSingleRow(:,(1+columns*(j-1)):columns*j,:);
+    n = n+1;
     end   
 end
     

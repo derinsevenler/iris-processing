@@ -4,37 +4,32 @@ clc
 clear all
 close all
 % Get the mirror image file info
-
 [file, folder] = uigetfile('*.*', 'Select the mirror file');
 mirFile= [folder filesep file];
 
-
-% Get the tiff Image
+% Get the tiff Image or images if you want to do a full slide
 [dataFile, dataFolder]= uigetfile('*.*', 'Select the 4 files (TIFF image stack also)', 'MultiSelect', 'on');
 
 
-
-%imgSet = imageSet(dataFolder);
-%im1 = read(imgSet,1);
-%montage(imgSet.ImageLocation, 'DisplayRange', median(im1(:))*[0.8 1.2]) ;
-
+%%% open, crop the ROI, and align all images %%%
 for i = 1:numel(dataFile)
     
 tifFile= fullfile(dataFolder, dataFile{i});
 
+%number of timesteps
 info=imfinfo(tifFile);
 numIm=numel(info);
 
 
-%%%Alignment of the full FOV
+%Alignment of each image
 color=1;
 nColor=1;
 im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
 
-%%%Select the 4 blocks you want to use for the full analysis (this helps with
-%%%the feature alignment. Different crops will make it work.
+%Select the regions of each image you want to concatenate. These will be
+%aligned and concatenated.
 j = figure('Name','Please select the 4 block FOV you want to use from this image ');
 [im1, cropFOVCord] = imcrop(im1);
 close(j);
@@ -53,7 +48,7 @@ for channel = 2:numIm
 end
 end
 
-%stitch images
+%stitch images into a full slide
 slide = imageStitch(alignedBlocks);
 im1 = slide(:,:,1);
 
@@ -62,8 +57,8 @@ d = figure('Name', 'This is the image you will analyze');
 imshow(im1, median(im1(:))*[0.8 1.2]);
 numberofblocks = inputdlg('how many blocks do you want to analyze in this image?');
 close(d);
-%%
-%%%Check alignment and preform analysis for each block in the image
+
+%% Check alignment and preform analysis for each block in the image
 for blocknumber = 1:str2num(numberofblocks{1});
     clear align Ial
     
