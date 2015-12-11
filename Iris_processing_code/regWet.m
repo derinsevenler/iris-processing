@@ -6,12 +6,12 @@
 % %%by the amount calculated by the phase correlation function.
 % %%%the modified image is the second
 % 
-function [Ial,delta,bestAngle]=regWet(d,w,data,count)
+function [Ial,delta,bestAngle]=regWet(d,w,data)
 
 % %change the range of the angle if you think the rotation could be bigger/smaller. 
 % %increase the step to speed up the process
 %  else
-angs = -4:.1:4;
+angs = -4:.05:4;
 dRotated = zeros(size(w,1), size(w,2),length(angs));
 qq = zeros(1,length(angs));
 for n = 1:length(angs)
