@@ -167,7 +167,12 @@ if str2num(numberofblocks{1}) == 1
     spotsTemp.heights{1} = rot90(spotsTemp.heights{1},3);
     spots = reformatData(spotsTemp.heights{1}, numberOfBlocks,rows,columns);
 else
-    h = warndlg('The data was not reformatted and was therefore left as is.')
+    for i = 1: str2num(numberofblocks{1})
+        Diff{i} = rot90(Difftemp{i}, 3);
+        spots{i} = rot90(spotsTemp.heights{i},3);
+    end
+    
+    h = warndlg('The data in each block was rotated 90 degrees clockwise to match McGill"s inkjet printer orientation.')
     
 end
 
