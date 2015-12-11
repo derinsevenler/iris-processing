@@ -1,6 +1,8 @@
-%%%This function detect the spots over a cropped region of the dry chip
+%%%Given a binary input, finds circles of specified radius and returns
+%%%center coordinates and radii.
+%%%This function detects the spots over a cropped region of the dry chip
 %%%image, containing all the spots . The user helped by the imdistline tool
-%%%calculate the radius of the spot and give to the program a range for the
+%%%calculates the radius of the spot and gives the program a range for the
 %%spots radius. The circle detection is
 %%provided by the function imfindcircles, based on hough transform.
 %%The function returns the radius and the center of each spot.

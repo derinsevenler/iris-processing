@@ -87,10 +87,13 @@ align(:,:,1)= im1Small./median(sRef(:));
 im1Old=align(:,:,1);
 
 %% ===========================================================================================================
-% %%Detect spots 
+%%%Detect spots 
 
-  %%% filt=boxcarAv(align(:,:,:,color)); %% to be used for bigger
- %%% stacks. 
+%%% filt=boxcarAv(align(:,:,:,color)); %% to be used for bigger
+%%% stacks. 
+ 
+ 
+%Find features that look like spots
      filt=align;
      if color==1
          numSpots=1; 
@@ -110,23 +113,22 @@ im1Old=align(:,:,1);
                f=0;
               [center,rad,minimum,maximum]= CircleDet(binary,minimum,maximum,f); 
          end
-      end
-%%   
-% % %%%% Calculate spots and annulus values
-% %  
+     end
+
+      
+%Spot check to only include spots that match the grid and calculate spot
+%values.
 progressbar('timesteps','Spot Measurements') 
       for channel=1:numIm      
-        
+            
+            %Spot check: discard spots that do not match grid
             if channel==1
              [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotBlock,spotBlockRect);
-          %%% sorting detect spots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-          matxy=sorting(center,rad,gridx,gridy,row,col);
+             %sorting confirmed spots: get the grid index of each spot
+             matxy=sorting(center,rad,gridx,gridy,row,col);
        
             end
-       
- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-    
+    %Calculate the value of each spot and annulus
     for g=1:col
               centCol=matxy(1:row,1:2,g);
               radCol=matxy(1:row,3,g);
@@ -135,7 +137,7 @@ progressbar('timesteps','Spot Measurements')
     end  
      progressbar(channel/numIm, [])
       end
- 
+%Find LUT if this is the first block analyzed of this slide 
 if blocknumber == 1
     [lutFile, lutFolder] = uigetfile('*.mat', 'Select the results file with the lookup table you wish to use');
     lutF = load([lutFolder filesep lutFile]);
@@ -144,7 +146,7 @@ if blocknumber == 1
     LUT=lutF.results.LUT;
 end
 
-
+%Apply LUT to spots and annulus and calculate difference.
 spotsLUT= interp1(LUT(:,2), LUT(:,1), spotsTemp.heights{blocknumber}, 'nearest', 0);
 annulusLUT= interp1(LUT(:,2), LUT(:,1), annulus.heights, 'nearest', 0);
 
@@ -153,6 +155,7 @@ end
 
 %% reformat data if the entire slide was analyzed at once (ie number of blocks = 1)
 if str2num(numberofblocks{1}) == 1
+    %gather input data on size of blocks
     default = {'16', '10', '10'};
     prompt = {'how many blocks did you just analyze?', 'rows per block', 'columns per block'};
     format=inputdlg(prompt,'format of slide', 1, default);
@@ -166,7 +169,10 @@ if str2num(numberofblocks{1}) == 1
     
     spotsTemp.heights{1} = rot90(spotsTemp.heights{1},3);
     spots = reformatData(spotsTemp.heights{1}, numberOfBlocks,rows,columns);
+    
 else
+    %if it was more than one block, apply a blockwise rotation to match
+    %mcgill's printer orientation.
     for i = 1: str2num(numberofblocks{1})
         Diff{i} = rot90(Difftemp{i}, 3);
         spots{i} = rot90(spotsTemp.heights{i},3);

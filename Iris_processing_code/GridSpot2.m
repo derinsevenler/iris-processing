@@ -1,6 +1,8 @@
-function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotBlock,spotBlockRect)
+%GridSpot2 compares a grid to the detected spot features and only inclues
+%spot features that are close to the grid.  detect "false positive" spots and construct the grid used for spots sorting
 
-%%  detect "false positive" spots and construct the grid used for spots sorting
+function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotBlock,spotBlockRect)
+%user input for rows and columns of block
 default = {'10 10'};
 numS=inputdlg('How many rows and columns of spots do you wish to analyze [nrow ncol]?', 'rows and columns', 1, default);
 numS=str2num(numS{1});
