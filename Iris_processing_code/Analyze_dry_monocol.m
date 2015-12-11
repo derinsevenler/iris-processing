@@ -119,6 +119,7 @@ im1Old=align(:,:,1);
 %%   
 % % %%%% Calculate spots and annulus values
 % %  
+progressbar('timesteps','Spot Measurements') 
       for channel=1:numIm      
         
             if channel==1
@@ -130,13 +131,14 @@ im1Old=align(:,:,1);
        
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-    progressbar('Spot Measurements') 
+    
     for g=1:col
               centCol=matxy(1:row,1:2,g);
               radCol=matxy(1:row,3,g);
-              [annulus.heights(1:row,g,channel),spots.heights{blocknumber}(1:row,g,channel)]= spotDet(filt(:,:,channel),centCol,radCol,spotBlockRect,channel,row);
-              progressbar(g/col)
-     end  
+              [annulus.heights(1:row,g,channel),spotsTemp.heights{blocknumber}(1:row,g,channel)]= spotDet(filt(:,:,channel),centCol,radCol,spotBlockRect,channel,row);
+              progressbar([],g/col)
+    end  
+     progressbar(channel/numIm, [])
       end
  
 if blocknumber == 1
@@ -148,11 +150,31 @@ if blocknumber == 1
 end
 
 
-spotsLUT= interp1(LUT(:,2), LUT(:,1), spots.heights{blocknumber}, 'nearest', 0);
+spotsLUT= interp1(LUT(:,2), LUT(:,1), spotsTemp.heights{blocknumber}, 'nearest', 0);
 annulusLUT= interp1(LUT(:,2), LUT(:,1), annulus.heights, 'nearest', 0);
 
-Diff{blocknumber}=(annulusLUT-spotsLUT)*-1;
+Difftemp{blocknumber}=(annulusLUT-spotsLUT)*-1;
 end
+
+%% reformat data if the entire slide was analyzed at once (ie number of blocks = 1)
+if str2num(numberofblocks{1}) == 1
+    default = {'16', '10', '10'};
+    prompt = {'how many blocks did you just analyze?', 'rows per block', 'columns per block'};
+    format=inputdlg(prompt,'format of slide', 1, default);
+    numberOfBlocks = str2num(format{1});
+    rows = str2num(format{2});
+    columns = str2num(format{3});
+    
+    Difftemp{1} = rot90(Difftemp{1});
+    Diff = reformatData(Difftemp{1}, numberOfBlocks, rows, columns);
+    
+    spotsTemp.heights{1} = rot90(spotsTemp.heights{1});
+    spots = reformatData(spotsTemp.heights{1}, numberOfBlocks,rows,columns);
+else
+    h = warndlg('The data was not reformatted and was therefore left as is.')
+    
+end
+
 % % %%===============================================================================================
 %% display and save results
    
