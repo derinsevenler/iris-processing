@@ -1,7 +1,7 @@
 %%% This code works on a stack of n monocolor dry images. 
 %% =============================================================================================
 clc
-clear all
+%clear all
 close all
 % Get the mirror image file info
 [file, folder] = uigetfile('*.*', 'Select the mirror file');
@@ -10,11 +10,20 @@ mirFile= [folder filesep file];
 % Get the tiff Image or images if you want to do a full slide
 [dataFile, dataFolder]= uigetfile('*.*', 'Select the 4 files (TIFF image stack also)', 'MultiSelect', 'on');
 
+if ischar(dataFile) == 1
+    numberOfFiles = 1;
+else
+    numberOfFiles = numel(dataFile);
+end
 
 %% open, crop the ROI, and align all images %%%
-for i = 1:numel(dataFile)
-    
-tifFile= fullfile(dataFolder, dataFile{i});
+for i = 1:numberOfFiles
+
+if ischar(dataFile) == 1
+    tifFile = fullfile(dataFolder, dataFile);
+else
+    tifFile= fullfile(dataFolder, dataFile{i});
+end
 
 %number of timesteps
 info=imfinfo(tifFile);
@@ -28,12 +37,13 @@ im1 = imread(tifFile, color);
 mir=imread(mirFile,1);
 im1=double(im1)./double(mir);
 
-%Select the regions of each image you want to concatenate. These will be
+%Select the regions of each image you want to analyze. These will be
 %aligned and concatenated.
-j = figure('Name','Please select the 4 block FOV you want to use from this image ');
+j = figure('Name','Please select the FOV you want to use from this image ');
 [im1, cropFOVCord] = imcrop(im1);
 close(j);
 alignedBlocks{i}(:,:,1) = im1;
+imageSegments{i}(:,:,1) = im1;
 
 
 %%%Perform initial alignment over full FOV
@@ -41,52 +51,55 @@ for channel = 2:numIm
     I = imread(tifFile,channel);
     im=double(I)./double(mir);
     im = imcrop(im, cropFOVCord);
-    [Ial,tform{channel}]=features(im1,im);
+    [Ial,tform{i}{channel}]=features(im1,im);
  
-    alignedBlocks{i}(:,:,channel)=Ial;
+    alignedBlocks{i}(:,:,channel) = Ial;
+    imageSegments{i}(:,:,channel) = im;
     progressbar(channel/numIm)
 end
-end
 
-%stitch images into a full slide
-slide = imageStitch(alignedBlocks);
-im1 = slide(:,:,1);
 
-%%%View full FOV to count how many blocks to be analyzed.
-d = figure('Name', 'This is the image you will analyze');
-imshow(im1, median(im1(:))*[0.8 1.2]);
-numberofblocks = inputdlg('how many blocks do you want to analyze in this image?');
-close(d);
-
-%% Check alignment and preform analysis for each block in the image
-for blocknumber = 1:str2num(numberofblocks{1});
+% %stitch images into a full slide
+% slide = imageStitch(alignedBlocks);
+% %im1 = slide(:,:,1);
+% 
+% %%%View full FOV to count how many blocks to be analyzed.
+% d = figure('Name', 'This is the image you will analyze');
+% imshow(im1, median(im1(:))*[0.8 1.2]);
+% numberofblocks = inputdlg('how many blocks do you want to analyze in this image?');
+% close(d);
+% 
+% %% Check alignment and preform analysis for each block in the image
+% for blocknumber = 1:str2num(numberofblocks{1});
     clear align Ial
-    
-e = figure('Name',['Please select block ' num2str(blocknumber) 'to analyze']);
-[im1Small, cropCord] = imcrop(im1);
-close(e);
+%     
+% e = figure('Name',['Please select block ' num2str(blocknumber) 'to analyze']);
+% [im1Small, cropCord] = imcrop(im1);
+% close(e);
 
 f=figure('Name','Please select a region of bare Si');
-[~, selfRefRegion] = imcrop(im1Small);
+[~, selfRefRegion] = imcrop(im1);
 close(f);
 
 
+
+
 for channel = 2:numIm   
-    imsmall = imcrop(slide(:,:,channel), cropCord);
  
-    [Ial] = Alignmentchecker(im1Small, imsmall);
+    Ial = Alignmentchecker(im1, alignedBlocks{i}(:,:,channel));
     
     sRef = imcrop(Ial, selfRefRegion);
     Ialpost= Ial./median(sRef(:));
-    align(:,:,channel)=Ialpost;
+    alignedBlocks{i}(:,:,channel)=Ialpost;
     progressbar(channel/numIm)
 end
 
-sRef=imcrop(im1Small,selfRefRegion); 
-align(:,:,1)= im1Small./median(sRef(:));
-im1Old=align(:,:,1);
+sRef=imcrop(im1,selfRefRegion); 
+imageSegments{i}(:,:,1) = imageSegments{i}(:,:,1)./median(sRef(:));
+alignedBlocks{i}(:,:,1) = alignedBlocks{i}(:,:,1)./median(sRef(:));
+im1Old=alignedBlocks{i}(:,:,1);
 
-%% ===========================================================================================================
+%% Find spots and measure their values.
 %%%Detect spots 
 
 %%% filt=boxcarAv(align(:,:,:,color)); %% to be used for bigger
@@ -94,7 +107,7 @@ im1Old=align(:,:,1);
  
  
 %Find features that look like spots
-     filt=align;
+     %filt=align;
      if color==1
          numSpots=1; 
          minimum=10;
@@ -104,7 +117,7 @@ im1Old=align(:,:,1);
               
     
                g=figure('Name','crop one region containing all the spots you wish to analyze');
-               [spotBlock, spotBlockRect(n,:)] = imcrop(im1Old, median(double(im1Old(:)))*[.8, 1.2]); 
+               [spotBlock, spotBlockRect] = imcrop(im1Old, median(double(im1Old(:)))*[.8, 1.2]); 
                close(g);
                
                spotad=imadjust(spotBlock);
@@ -128,8 +141,18 @@ progressbar('timesteps','Spot Measurements')
              matxy=sorting(center,rad,gridx,gridy,row,col);
              
              %Create spot mask
-       
+             localMask(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1));
+             
+             %Pad mask to match the size of the full FOV to which we have
+             %the tranformation
+             %FOVMasktemp1(:,:,channel) = padarray(localMask, [floor(spotBlockRect(1) + cropFOVCord(1)) 0], 0, 'pre');
+             %FOVMasktemp2(:,:,channel) = padarray(FOVMasktemp1, [0 floor(spotBlockRect(2) + cropFOVCord(2))], 0, 'post');
+             %FOVMask(:,:,channel) = padarray(FOVMasktemp2, [size(imageSegments{1},1)-size(FOVMasktemp2,1) 0], 0, 'post');
+             %FOVMask(:,:,channel) = padarray(FOVMask(:,:,channel), [0 size(imageSegments{1},2)-size(FOVMasktemp,2)], 0, 'pre');
+            else
+                FOVMask(:,:,channel) = imwarp(FOVMask(:,:,1),tform{channel},'OutputView',outputView);
             end
+            
     %Calculate the value of each spot and annulus
     for g=1:col
               centCol=matxy(1:row,1:2,g);
@@ -154,6 +177,7 @@ annulusLUT= interp1(LUT(:,2), LUT(:,1), annulus.heights, 'nearest', 0);
 
 Difftemp{blocknumber}=(annulusLUT-spotsLUT)*-1;
 end
+%end
 
 %% reformat data if the entire slide was analyzed at once (ie number of blocks = 1)
 if str2num(numberofblocks{1}) == 1

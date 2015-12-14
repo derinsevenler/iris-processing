@@ -10,8 +10,17 @@ function [Ial] = Alignmentchecker(im1, im)
 z = 0;
 Ial = im;
 
+yZeroCoordinates = find(not(im(1,:)));
+xZeroCoordinates = find(not(im(:,1)));
+if isempty(yZeroCoordinates) == 0
+    ycoord = yZeroCoordinates(1);
+else
+    ycoord = size(im,2);
+end
+
+
 %[Ial,delta,angle]=regWet(im1,im,im);
-error = (double(Ial)-double(im1)).^2;
+error = (double(Ial(:,1:ycoord)-double(im1(:, 1:ycoord)))).^2;
 errorpPixel = sum(error(:))/numel(im1);
 
 
@@ -33,7 +42,7 @@ nobtn = uicontrol('Style', 'pushbutton', 'String', 'no',...
     'Callback', @startOver);
 
 hold on
-imshow((double(im1)+double(Ial))/2);
+imshow((double(im1(:, 1:ycoord))+double(Ial(:, 1:ycoord)))/2);
 hold off
 
 
