@@ -11,7 +11,7 @@ mirFile= [folder filesep file];
 [dataFile, dataFolder]= uigetfile('*.*', 'Select the 4 files (TIFF image stack also)', 'MultiSelect', 'on');
 
 
-%%% open, crop the ROI, and align all images %%%
+%% open, crop the ROI, and align all images %%%
 for i = 1:numel(dataFile)
     
 tifFile= fullfile(dataFolder, dataFile{i});
@@ -41,7 +41,7 @@ for channel = 2:numIm
     I = imread(tifFile,channel);
     im=double(I)./double(mir);
     im = imcrop(im, cropFOVCord);
-    [Ial]=features(im1,im);
+    [Ial,tform{channel}]=features(im1,im);
  
     alignedBlocks{i}(:,:,channel)=Ial;
     progressbar(channel/numIm)
@@ -126,6 +126,8 @@ progressbar('timesteps','Spot Measurements')
              [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotBlock,spotBlockRect);
              %sorting confirmed spots: get the grid index of each spot
              matxy=sorting(center,rad,gridx,gridy,row,col);
+             
+             %Create spot mask
        
             end
     %Calculate the value of each spot and annulus

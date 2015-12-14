@@ -15,7 +15,7 @@ for i = 1: size(inputData,1)/rows
 end
     
 if numberOfBlocks == numel(outputData)
-    print('Data reorganization successful')
+    display('Data reorganization successful')
 else
     h = warndlg('There were problems in the reorganization of the data');
 end
