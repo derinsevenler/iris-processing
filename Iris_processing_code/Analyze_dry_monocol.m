@@ -151,8 +151,17 @@ progressbar('timesteps','Spot Measurements')
                 FOVSpotMask(:,:,channel) = imwarp(FOVSpotMask(:,:,1),tform{channel},'OutputView',outputView);
                 FOVAnnulusMask(:,:,channel) = imwarp(FOVAnnulusMask(:,:,1),tform{channel},'OutputView',outputView);
             end
+     %%       
+            spotLabels(:,:,channel) = bwlabel(FOVSpotMask(:,:,channel));
+            annulusLabels(:,:,channel) = bwlabel(FOVAnnulusMask(:,:,channel));
             
-    %Calculate the value of each spot and annulus
+            spotMed = MaskMeasure(imageSegments{i}(:,:,channel), spotLabels(:,:,channel), gridx, gridy);
+            annulusMed = MaskMeasure(imageSegments{i}(:,:,channel), annulusLabels(:,:,channel), gridx, gridy);
+            
+           
+            
+            
+ %%   %Calculate the value of each spot and annulus
     for g=1:col
               centCol=matxy(1:row,1:2,g);
               radCol=matxy(1:row,3,g);
