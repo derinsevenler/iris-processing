@@ -141,16 +141,15 @@ progressbar('timesteps','Spot Measurements')
              matxy=sorting(center,rad,gridx,gridy,row,col);
              
              %Create spot mask
-             localMask(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1));
+             FOVSpotMask(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), 0.8);
              
-             %Pad mask to match the size of the full FOV to which we have
-             %the tranformation
-             %FOVMasktemp1(:,:,channel) = padarray(localMask, [floor(spotBlockRect(1) + cropFOVCord(1)) 0], 0, 'pre');
-             %FOVMasktemp2(:,:,channel) = padarray(FOVMasktemp1, [0 floor(spotBlockRect(2) + cropFOVCord(2))], 0, 'post');
-             %FOVMask(:,:,channel) = padarray(FOVMasktemp2, [size(imageSegments{1},1)-size(FOVMasktemp2,1) 0], 0, 'post');
-             %FOVMask(:,:,channel) = padarray(FOVMask(:,:,channel), [0 size(imageSegments{1},2)-size(FOVMasktemp,2)], 0, 'pre');
+             %Create the annulus mask
+             FOVAnnulusMask(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), 1.3);
+             
+            
             else
-                FOVMask(:,:,channel) = imwarp(FOVMask(:,:,1),tform{channel},'OutputView',outputView);
+                FOVSpotMask(:,:,channel) = imwarp(FOVSpotMask(:,:,1),tform{channel},'OutputView',outputView);
+                FOVAnnulusMask(:,:,channel) = imwarp(FOVAnnulusMask(:,:,1),tform{channel},'OutputView',outputView);
             end
             
     %Calculate the value of each spot and annulus
