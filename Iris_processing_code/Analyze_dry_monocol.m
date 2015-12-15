@@ -162,15 +162,15 @@ for i = 1:numberOfFiles
         %progressbar(channel/numIm)
     end
   
-    
+    %%
     %gather input data on size of blocks
     default = {'4', '10', '10'};
     prompt = {'how many blocks did you just analyze?', 'rows per block', 'columns per block'};
     format=inputdlg(prompt,'format of slide', 1, default);
     numberOfBlocks = str2num(format{1});
-    rows = str2num(format{2});
-    columns = str2num(format{3});
-    
+    columns = str2num(format{2});
+    rows = str2num(format{3});
+    %%
     %rotate such that the left side is the top like in the printer
     spotMed{1} = rot90(spotMed{1}, 3);
     annulusMed{1} = rot90(annulusMed{1}, 3);
@@ -178,7 +178,7 @@ for i = 1:numberOfFiles
     spotLUT{1} = rot90(spotLUT{1}, 3);
     annulusLUT{1} = rot90(annulusLUT{1}, 3);
     DiffLUT{1} = rot90(DiffLUT{1}, 3);
-    
+    %%
     %break data into arrays based on incubation blocks
     spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rows, columns);
     annulusRaw = reformatData(annulusMed{i}, numberOfBlocks, rows, columns);
@@ -208,11 +208,11 @@ for i = 1:numberOfFiles
     
 end
 
-
+%%
 
 saveName='results.mat';
 [filename, pathname] = uiputfile(saveName, 'Save results as');
 save([pathname filesep filename], 'results');
 
 
-
+%%

@@ -9,7 +9,7 @@
 prompt = {'Signal Intensity of a spot','size of spot in pixels', 'number of frames averaged', 'number of spots measured at a time', 'slope of the LUT', 'mirror intensity'};
 dlg_title = 'Input';
 num_lines = 1;
-defaultans = {'5000','860', '50', '1', '102.1103', '10300'};
+defaultans = {'36000','600', '50', '1', '96', '60300'};
 answer = inputdlg(prompt,dlg_title,num_lines,defaultans);
 
 
