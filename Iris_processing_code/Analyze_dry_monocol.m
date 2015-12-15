@@ -1,7 +1,7 @@
 %%% This code works on a stack of n monocolor dry images.
 %% =============================================================================================
 clc
-clear all
+% clear all
 close all
 % Get the mirror image file info
 [file, folder] = uigetfile('*.*', 'Select the mirror file');

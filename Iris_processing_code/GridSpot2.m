@@ -45,16 +45,17 @@ axis tight
 
 seLine = strel('line',estPeriod,0);
 xProfile2 = imtophat(xProfile,seLine);
+xProfile3 = smooth(xProfile2, 3)';
 f4 = figure('position',[40 443 285 76]);
-plot(xProfile2)
+plot(xProfile3)
 title('enhanced horizontal profile')
 axis tight
 
 %% Find peaks
 minPeakWidth = median(ra) - 6*std(ra);
 maxPeakWidth = median(ra) + 3*std(ra);
-[pks,xCenters] = findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth);
-findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
+[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth);
+findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 %% Transpose and repeat
@@ -70,9 +71,10 @@ maxima = find(p1>0 & p2<0);                 %peak locations
 estPeriod = round(median(diff(maxima)));     %spacing estimate
 seLine = strel('line',estPeriod,0);
 yProfile2 = imtophat(yProfile,seLine);      %background removed
+yProfile3 = smooth(yProfile2, 3)';
 
-[pks,yCenters] = findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth); 
-findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
+[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth); 
+findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 
@@ -81,7 +83,7 @@ findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminen
 totx = repmat(xCenters,row,1);
 toty = repmat(yCenters',1,col);
 
-%% Pad totx and toty to match the size of the col and row,to avoid plotting errors and show and failed spot detection.
+%% Pad totx and toty to match the size of the col and row,to avoid plotting errors and show failed spot detection.
 if size(totx,1)<row
     totx = padarray(totx,[row-size(totx,1), 0], NaN, 'post');
 end
