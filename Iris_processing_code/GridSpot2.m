@@ -1,14 +1,21 @@
 %GridSpot2 compares a grid to the detected spot features and only inclues
 %spot features that are close to the grid.  detect "false positive" spots and construct the grid used for spots sorting
 
-function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotBlock,spotBlockRect)
+function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotBlock,varargin)
+
+if numel(varargin) == 2
+    row = varargin{1};
+    col = varargin{2};
+elseif numel(varargin) == 1
+spotBlockRect = varargin{1};
+
 %user input for rows and columns of block
 default = {'10 10'};
 numS=inputdlg('How many rows and columns of spots do you wish to analyze [nrow ncol]?', 'rows and columns', 1, default);
 numS=str2num(numS{1});
 row=(numS(1));
 col=(numS(2));
-
+end
 
 
 %% Create horizontal profile
@@ -44,10 +51,10 @@ title('enhanced horizontal profile')
 axis tight
 
 %% Find peaks
-minPeakWidth = median(ra) - 3*std(ra);
+minPeakWidth = median(ra) - 6*std(ra);
 maxPeakWidth = median(ra) + 3*std(ra);
-[pks,xCenters] = findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.003);%, 'MaxPeakWidth', maxPeakWidth);
-findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.003);%, 'MaxPeakWidth', maxPeakWidth)
+[pks,xCenters] = findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth);
+findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 %% Transpose and repeat
@@ -64,8 +71,8 @@ estPeriod = round(median(diff(maxima)));     %spacing estimate
 seLine = strel('line',estPeriod,0);
 yProfile2 = imtophat(yProfile,seLine);      %background removed
 
-[pks,yCenters] = findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.003);%, 'MaxPeakWidth', maxPeakWidth); 
-findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.003);%, 'MaxPeakWidth', maxPeakWidth)
+[pks,yCenters] = findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth); 
+findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 
@@ -223,13 +230,20 @@ plot(cent(:,1),cent(:,2),'go'); %%cent contains just the dectected circles that 
 hold off
 
 %legend('Grid','Detected','True');
+
+
 %% giving the full FOV coordinates instead of the local coordinates.
-cent(:,1)=cent(:,1)+spotBlockRect(1);
-cent(:,2)=cent(:,2)+spotBlockRect(2);
-center=cent;
-rad=ra;
-totx=totx+spotBlockRect(1);
-toty=toty+spotBlockRect(2);
+if numel(varargin) == 2
+    center = cent;
+    rad = ra;
+elseif numel(varargin) == 1
+    cent(:,1)=cent(:,1)+spotBlockRect(1);
+    cent(:,2)=cent(:,2)+spotBlockRect(2);
+    center=cent;
+    rad=ra;
+    totx=totx+spotBlockRect(1);
+    toty=toty+spotBlockRect(2);
+end
 
 
 %% Callback functions

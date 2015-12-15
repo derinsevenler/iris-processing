@@ -163,19 +163,24 @@ for i = 1:numberOfFiles
             outputView = imref2d(size(FOVSpotMask{i}(:,:,1)));
             FOVSpotMask{i}(:,:,channel) = imwarp(FOVSpotMask{i}(:,:,1),invtform{i}{channel},'OutputView',outputView);
             
-            %find circles
-            [center, ~] = imfindcircles(FOVSpotMask{i}(:,:,channel),[minimum-5 maximum+5],'ObjectPolarity','bright','Sensitivity',0.93);
+            %find circles centers
+            spotad=imadjust(FOVSpotMask{i}(:,:,channel));
+            level=graythresh(spotad);
+            binary=im2bw(spotad,level);
+            %[center, ~] = imfindcircles(binary,[minimum-10 maximum+10],'ObjectPolarity','bright','Sensitivity',0.99);
+            [center] = MaskMeasure(binary);
             
             %Define masks based on new centers
             FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), 0.8);
             FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), 1.3);
+            
+            %Define shifted grid
+            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,channel),row,col);
         end
-        %   label the black and white masks
-        spotLabels{i}(:,:,channel) = bwlabel(FOVSpotMask{i}(:,:,channel));
-        annulusLabels{i}(:,:,channel) = bwlabel(FOVAnnulusMask{i}(:,:,channel));
+
         %   Calculate the median value of each region
-        spotMed{i}(:,:,channel) = MaskMeasure(imageSegments{i}(:,:,channel), spotLabels{i}(:,:,channel), gridx, gridy);
-        annulusMed{i}(:,:,channel) = MaskMeasure(imageSegments{i}(:,:,channel), annulusLabels{i}(:,:,channel), gridx, gridy);
+        [~, spotMed{i}(:,:,channel)] = MaskMeasure(imageSegments{i}(:,:,channel), FOVSpotMask{i}(:,:,channel), gridx, gridy);
+        [~, annulusMed{i}(:,:,channel)] = MaskMeasure(imageSegments{i}(:,:,channel), FOVAnnulusMask{i}(:,:,channel), gridx, gridy);
         DiffMed{i}(:,:,channel) = spotMed{i}(:,:,channel) - annulusMed{i}(:,:,channel);
         
         % Apply the LUT 
