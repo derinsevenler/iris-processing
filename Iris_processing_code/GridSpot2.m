@@ -54,8 +54,8 @@ axis tight
 %% Find peaks
 minPeakWidth = median(ra) - 6*std(ra);
 maxPeakWidth = median(ra) + 3*std(ra);
-[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth);
-findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
+[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth);
+findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 %% Transpose and repeat
@@ -73,8 +73,8 @@ seLine = strel('line',estPeriod,0);
 yProfile2 = imtophat(yProfile,seLine);      %background removed
 yProfile3 = smooth(yProfile2, 3)';
 
-[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth); 
-findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
+[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth); 
+findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 

@@ -1,7 +1,7 @@
 %%% This code works on a stack of n monocolor dry images.
 %% =============================================================================================
 clc
-% clear all
+clear all
 close all
 % Get the mirror image file info
 [file, folder] = uigetfile('*.*', 'Select the mirror file');
@@ -61,32 +61,14 @@ for i = 1:numberOfFiles
         progressbar(channel/numIm)
     end
     
-    
-    % %stitch images into a full slide
-    % slide = imageStitch(alignedBlocks);
-    % %im1 = slide(:,:,1);
-    %
-    % %%%View full FOV to count how many blocks to be analyzed.
-    % d = figure('Name', 'This is the image you will analyze');
-    % imshow(im1, median(im1(:))*[0.8 1.2]);
-    % numberofblocks = inputdlg('how many blocks do you want to analyze in this image?');
-    % close(d);
-    %
-    % %% Check alignment and preform analysis for each block in the image
-    % for blocknumber = 1:str2num(numberofblocks{1});
+
     clear align Ial
-    %
-    % e = figure('Name',['Please select block ' num2str(blocknumber) 'to analyze']);
-    % [im1Small, cropCord] = imcrop(im1);
-    % close(e);
-    
+
+    %Selecting a silicon reference region
     f=figure('Name','Please select a region of bare Si');
     [~, selfRefRegion] = imcrop(im1);
     close(f);
-    
-    
-    
-    
+
     for channel = 2:numIm
         
         Ial = Alignmentchecker(im1, alignedBlocks{i}(:,:,channel));
@@ -142,7 +124,7 @@ for i = 1:numberOfFiles
     
     %Spot check to only include spots that match the grid and calculate spot
     %values.
-    progressbar('timesteps')
+    %progressbar('timesteps')
     for channel=1:numIm
         
         %Spot check: discard spots that do not match grid
@@ -189,7 +171,7 @@ for i = 1:numberOfFiles
         spotLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), spotMed{i}(:,:,channel), 'nearest', 0);
         annulusLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), annulusMed{i}(:,:,channel), 'nearest', 0);
         DiffLUT{i}(:,:,channel) = spotLUT{i}(:,:,channel) - annulusLUT{i}(:,:,channel);
-        progressbar(channel/numIm)
+        %progressbar(channel/numIm)
     end
   
     
@@ -209,21 +191,31 @@ for i = 1:numberOfFiles
     annulusLUT{1} = rot90(annulusLUT{1}, 3);
     DiffLUT{1} = rot90(DiffLUT{1}, 3);
     
-    %break data into arrays based on blocks
-   
-    results.raw.spots = reformatData(spotMed{i}, numberOfBlocks, rows, columns,foo);
-    results.raw.annulus = reformatData(annulusMed{i}, numberOfBlocks, rows, columns,foo);
-    results.raw.diff = reformatData(DiffMed{i}, numberOfBlocks, rows, columns,foo);
-    results.height.spots = reformatData(spotLUT{i}, numberOfBlocks, rows, columns,foo);
-    results.height.annulus = reformatData(annulusLUT{i}, numberOfBlocks, rows, columns,foo);
-    results.height.diff = reformatData(DiffLUT{i}, numberOfBlocks, rows, columns,foo);
+    %break data into arrays based on incubation blocks
+    spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rows, columns);
+    annulusRaw = reformatData(annulusMed{i}, numberOfBlocks, rows, columns);
+    diffRaw = reformatData(DiffMed{i}, numberOfBlocks, rows, columns);
+    spotsHeight = reformatData(spotLUT{i}, numberOfBlocks, rows, columns);
+    annulusHeight= reformatData(annulusLUT{i}, numberOfBlocks, rows, columns);
+    diffHeight = reformatData(DiffLUT{i}, numberOfBlocks, rows, columns);
+    
+    %reformat for final output with all the data
+    for syzygy = 1:numberOfBlocks 
+    results.raw.spots{foo + syzygy-1} = spotsRaw{syzygy};
+    results.raw.annulus{foo + syzygy-1} = annulusRaw{syzygy};
+    results.raw.diff {foo + syzygy-1} = diffRaw{syzygy};
+    results.height.spots{foo + syzygy-1} = spotsHeight{syzygy};
+    results.height.annulus{foo + syzygy-1} = annulusHeight{syzygy};
+    results.height.diff{foo + syzygy-1} = diffHeight{syzygy};
+    end
+    
     %increment block tracker
     foo = foo+numberOfBlocks;
     
     %add images masks, and LUT to results file
-    results.images{i} = imageSegments{i};
-    results.spotMasks{i} = FOVSpotMask{i};
-    results.annulusMasks{i} = FOVAnnulusMask{i};
+    %results.images{i} = imageSegments{i};
+    %results.spotMasks{i} = FOVSpotMask{i};
+    %results.annulusMasks{i} = FOVAnnulusMask{i};
     results.LUT = LUT;
     
 end
