@@ -216,48 +216,16 @@ for i = 1:numberOfFiles
     results.LUT.spots{foo:foo+numberOfBlocks} = reformatData(spotLUT{i}, numberOfBlocks, rows, columns,foo);
     results.LUT.annulus{foo:foo+numberOfBlocks} = reformatData(annulusLUT{i}, numberOfBlocks, rows, columns,foo);
     results.LUT.diff{foo:foo+numberOfBlocks} = reformatData(DiffLUT{i}, numberOfBlocks, rows, columns,foo);
-
-    
+    %increment block tracker
     foo = foo+numberOfBlocks;
     
-end
-%end
-
-%% reformat data if the entire slide was analyzed at once (ie number of blocks = 1)
-if str2num(numberofblocks{1}) == 1
-    %gather input data on size of blocks
-    default = {'16', '10', '10'};
-    prompt = {'how many blocks did you just analyze?', 'rows per block', 'columns per block'};
-    format=inputdlg(prompt,'format of slide', 1, default);
-    numberOfBlocks = str2num(format{1});
-    rows = str2num(format{2});
-    columns = str2num(format{3});
-    
-    %rotate such that the left side is the top
-    Difftemp{1} = rot90(Difftemp{1}, 3);
-    Diff = reformatData(Difftemp{1}, numberOfBlocks, rows, columns);
-    
-    spotsTemp.heights{1} = rot90(spotsTemp.heights{1},3);
-    spots = reformatData(spotsTemp.heights{1}, numberOfBlocks,rows,columns);
-    
-else
-    %if it was more than one block, apply a blockwise rotation to match
-    %mcgill's printer orientation.
-    for i = 1: str2num(numberofblocks{1})
-        Diff{i} = rot90(Difftemp{i}, 3);
-        spots{i} = rot90(spotsTemp.heights{i},3);
-    end
-    
-    h = warndlg('The data in each block was rotated 90 degrees clockwise to match McGill"s inkjet printer orientation.')
+    results.images{i} = imageSegments{i};
+    results.spotMasks{i} = FOVSpotMask{i};
+    results.annulusMasks{i} = FOVannulusMask{i};
+    results.LUT = LUT;
     
 end
 
-% % %%===============================================================================================
-%% display and save results
-clear results
-results.slide = slide;
-results.spotsNet = Diff;
-results.spotsRaw = spots;
 
 
 saveName='results.mat';
