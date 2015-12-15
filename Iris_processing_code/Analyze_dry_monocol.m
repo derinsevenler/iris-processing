@@ -94,13 +94,7 @@ for i = 1:numberOfFiles
     %Find features that look like spots
     %filt=align;
     if color==1
-        numSpots=1;
-        minimum=10;
-        maximum=20;
-        
-        for n = 1:numSpots
-            
-            
+
             g=figure('Name','crop one region containing all the spots you wish to analyze');
             [spotBlock, spotBlockRect] = imcrop(im1Old, median(double(im1Old(:)))*[.8, 1.2]);
             close(g);
@@ -108,9 +102,7 @@ for i = 1:numberOfFiles
             spotad=imadjust(spotBlock);
             level=graythresh(spotad);
             binary=im2bw(spotad,level);
-            f=0;
-            [center,rad,minimum,maximum]= CircleDet(binary,minimum,maximum,f);
-        end
+            [center,rad,minimum,maximum]= CircleDet(binary);
     end
     
     
@@ -122,16 +114,13 @@ for i = 1:numberOfFiles
         LUT=lutF.results.LUT;
     end
     
-    %Spot check to only include spots that match the grid and calculate spot
-    %values.
+
     %progressbar('timesteps')
     for channel=1:numIm
         
         %Spot check: discard spots that do not match grid
         if channel==1
             [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotBlock,spotBlockRect);
-            %sorting confirmed spots: get the grid index of each spot
-            %matxy=sorting(center,rad,gridx,gridy,row,col);
             
             %Create spot mask
             FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), 0.8);
@@ -141,7 +130,6 @@ for i = 1:numberOfFiles
             
         else
             %define inverse tranformation
-           
             invtform{i}{channel} = invert(tform{i}{channel});
             
             %Apply tranformation to mask

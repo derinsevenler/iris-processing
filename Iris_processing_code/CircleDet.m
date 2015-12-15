@@ -7,7 +7,7 @@
 %%provided by the function imfindcircles, based on hough transform.
 %%The function returns the radius and the center of each spot.
 
-function [centers,radii,minn,maxx,row,col]= CircleDet(data,minn,maxx,f)
+function [centers,radii,minn,maxx,row,col]= CircleDet(data)
 
 g=figure;
 imshow(data,median(double(data(:)))*[.8 1.2]);
