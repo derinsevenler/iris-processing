@@ -160,11 +160,11 @@ for i = 1:numberOfFiles
             invtform{i}{channel} = invert(tform{i}{channel});
             
             %Apply tranformation to mask
-            outputView = imref2d(size(FOVSpotMask(:,:,1)));
+            outputView = imref2d(size(FOVSpotMask{i}(:,:,1)));
             FOVSpotMask{i}(:,:,channel) = imwarp(FOVSpotMask{i}(:,:,1),invtform{i}{channel},'OutputView',outputView);
             
             %find circles
-            [center, ~] = imfindcircles(FOVSpotMask{i}(:,:,channel),[minimum maximum],'ObjectPolarity','bright','Sensitivity',0.93);
+            [center, ~] = imfindcircles(FOVSpotMask{i}(:,:,channel),[minimum-5 maximum+5],'ObjectPolarity','bright','Sensitivity',0.93);
             
             %Define masks based on new centers
             FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), 0.8);
