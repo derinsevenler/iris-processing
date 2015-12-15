@@ -208,11 +208,9 @@ for i = 1:numberOfFiles
     
 end
 
-%%
 
 saveName='results.mat';
 [filename, pathname] = uiputfile(saveName, 'Save results as');
 save([pathname filesep filename], 'results');
 
 
-%%
