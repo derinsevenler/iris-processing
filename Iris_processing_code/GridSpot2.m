@@ -3,9 +3,10 @@
 
 function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotBlock,varargin)
 
-if numel(varargin) == 2
+if numel(varargin) == 3
     row = varargin{1};
     col = varargin{2};
+    image = varargin{3};
 elseif numel(varargin) == 1
 spotBlockRect = varargin{1};
 
@@ -224,7 +225,11 @@ ra(idxF,:)=[];
 
 %% show the grid and the detected spots
 figure(3);
+if numel(varargin) == 3
+    imshow(spotBlock+image);
+else
 imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
+end
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 
@@ -235,7 +240,7 @@ hold off
 
 
 %% giving the full FOV coordinates instead of the local coordinates.
-if numel(varargin) == 2
+if numel(varargin) == 3
     center = cent;
     rad = ra;
 elseif numel(varargin) == 1

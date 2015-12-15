@@ -5,7 +5,7 @@ function [ mask ] = spotMask( image, radius, ycoord, xcoord, percentage )
 
 mask = zeros(size(image));
 
-for i = 1:length(radius)
+for i = 1:length(ycoord)
     mask = MidpointDisk(mask, percentage*radius(i),ycoord(i),xcoord(i), 1);
 end
 

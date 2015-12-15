@@ -147,7 +147,7 @@ for i = 1:numberOfFiles
             FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), 1.3);
             
             %Define shifted grid
-            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,channel),row,col);
+            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,channel),row,col,imageSegments{i}(:,:,channel));
         end
 
         %   Calculate the median value of each region
