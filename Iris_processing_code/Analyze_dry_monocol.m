@@ -188,7 +188,7 @@ for i = 1:numberOfFiles
         % Apply the LUT 
         spotLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), spotMed{i}(:,:,channel), 'nearest', 0);
         annulusLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), annulusMed{i}(:,:,channel), 'nearest', 0);
-        DiffLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), DiffMed{i}(:,:,channel), 'nearest', 0);
+        DiffLUT{i}(:,:,channel) = spotLUT{i}(:,:,channel) - annulusLUT{i}(:,:,channel);
         progressbar(channel/numIm)
     end
   
@@ -210,18 +210,20 @@ for i = 1:numberOfFiles
     DiffLUT{1} = rot90(DiffLUT{1}, 3);
     
     %break data into arrays based on blocks
-    results.raw.spots{foo:foo+numberOfBlocks} = reformatData(spotMed{i}, numberOfBlocks, rows, columns,foo);
-    results.raw.annulus{foo:foo+numberOfBlocks} = reformatData(annulusMed{i}, numberOfBlocks, rows, columns,foo);
-    results.raw.diff{foo:foo+numberOfBlocks} = reformatData(DiffMed{i}, numberOfBlocks, rows, columns,foo);
-    results.LUT.spots{foo:foo+numberOfBlocks} = reformatData(spotLUT{i}, numberOfBlocks, rows, columns,foo);
-    results.LUT.annulus{foo:foo+numberOfBlocks} = reformatData(annulusLUT{i}, numberOfBlocks, rows, columns,foo);
-    results.LUT.diff{foo:foo+numberOfBlocks} = reformatData(DiffLUT{i}, numberOfBlocks, rows, columns,foo);
+   
+    results.raw.spots = reformatData(spotMed{i}, numberOfBlocks, rows, columns,foo);
+    results.raw.annulus = reformatData(annulusMed{i}, numberOfBlocks, rows, columns,foo);
+    results.raw.diff = reformatData(DiffMed{i}, numberOfBlocks, rows, columns,foo);
+    results.height.spots = reformatData(spotLUT{i}, numberOfBlocks, rows, columns,foo);
+    results.height.annulus = reformatData(annulusLUT{i}, numberOfBlocks, rows, columns,foo);
+    results.height.diff = reformatData(DiffLUT{i}, numberOfBlocks, rows, columns,foo);
     %increment block tracker
     foo = foo+numberOfBlocks;
     
+    %add images masks, and LUT to results file
     results.images{i} = imageSegments{i};
     results.spotMasks{i} = FOVSpotMask{i};
-    results.annulusMasks{i} = FOVannulusMask{i};
+    results.annulusMasks{i} = FOVAnnulusMask{i};
     results.LUT = LUT;
     
 end
