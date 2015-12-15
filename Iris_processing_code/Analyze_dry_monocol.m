@@ -16,6 +16,9 @@ else
     numberOfFiles = numel(dataFile);
 end
 
+%tracker for # of blocks
+foo = 1;
+
 %% open, crop the ROI, and align all images %%%
 for i = 1:numberOfFiles
     
@@ -163,11 +166,10 @@ for i = 1:numberOfFiles
             outputView = imref2d(size(FOVSpotMask{i}(:,:,1)));
             FOVSpotMask{i}(:,:,channel) = imwarp(FOVSpotMask{i}(:,:,1),invtform{i}{channel},'OutputView',outputView);
             
-            %find circles centers
+            %find circles centers of transformed mask
             spotad=imadjust(FOVSpotMask{i}(:,:,channel));
             level=graythresh(spotad);
             binary=im2bw(spotad,level);
-            %[center, ~] = imfindcircles(binary,[minimum-10 maximum+10],'ObjectPolarity','bright','Sensitivity',0.99);
             [center] = MaskMeasure(binary);
             
             %Define masks based on new centers
@@ -190,6 +192,34 @@ for i = 1:numberOfFiles
         progressbar(channel/numIm)
     end
   
+    
+    %gather input data on size of blocks
+    default = {'4', '10', '10'};
+    prompt = {'how many blocks did you just analyze?', 'rows per block', 'columns per block'};
+    format=inputdlg(prompt,'format of slide', 1, default);
+    numberOfBlocks = str2num(format{1});
+    rows = str2num(format{2});
+    columns = str2num(format{3});
+    
+    %rotate such that the left side is the top like in the printer
+    spotMed{1} = rot90(spotMed{1}, 3);
+    annulusMed{1} = rot90(annulusMed{1}, 3);
+    DiffMed{1} = rot90(DiffMed{1}, 3);
+    spotLUT{1} = rot90(spotLUT{1}, 3);
+    annulusLUT{1} = rot90(annulusLUT{1}, 3);
+    DiffLUT{1} = rot90(DiffLUT{1}, 3);
+    
+    %break data into arrays based on blocks
+    results.raw.spots{foo:foo+numberOfBlocks} = reformatData(spotMed{i}, numberOfBlocks, rows, columns,foo);
+    results.raw.annulus{foo:foo+numberOfBlocks} = reformatData(annulusMed{i}, numberOfBlocks, rows, columns,foo);
+    results.raw.diff{foo:foo+numberOfBlocks} = reformatData(DiffMed{i}, numberOfBlocks, rows, columns,foo);
+    results.LUT.spots{foo:foo+numberOfBlocks} = reformatData(spotLUT{i}, numberOfBlocks, rows, columns,foo);
+    results.LUT.annulus{foo:foo+numberOfBlocks} = reformatData(annulusLUT{i}, numberOfBlocks, rows, columns,foo);
+    results.LUT.diff{foo:foo+numberOfBlocks} = reformatData(DiffLUT{i}, numberOfBlocks, rows, columns,foo);
+
+    
+    foo = foo+numberOfBlocks;
+    
 end
 %end
 

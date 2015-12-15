@@ -10,7 +10,7 @@ elseif numel(varargin) == 1
 spotBlockRect = varargin{1};
 
 %user input for rows and columns of block
-default = {'10 10'};
+default = {'20 20'};
 numS=inputdlg('How many rows and columns of spots do you wish to analyze [nrow ncol]?', 'rows and columns', 1, default);
 numS=str2num(numS{1});
 row=(numS(1));
