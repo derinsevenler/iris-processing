@@ -38,13 +38,21 @@ for i = 1:numberOfFiles
     color=1;
     nColor=1;
     im1 = imread(tifFile, color);
-    mir=imread(mirFile,1);
+   
+    if ischar(file) == 1
+        mir=imread(mirFile,1);
+    else
+        mir = ones(size(im1));
+        h = warndlg('No mirror was selected and thus the image was not normalized (divided by 1)');
+        waitfor(h)
+    end
+    
     im1=double(im1)./double(mir);
     
     %Select the regions of each image you want to analyze. These will be
     %aligned and concatenated.
     j = figure('Name','Please select the FOV you want to use from this image ');
-    [im1, cropFOVCord] = imcrop(im1);
+    [im1, cropFOVCord] = imcrop(im1, median(double(im1(:)))*[.8, 1.2]);
     close(j);
     alignedBlocks{i}(:,:,1) = im1;
     imageSegments{i}(:,:,1) = im1;
