@@ -3,6 +3,7 @@
 clc
 clear all
 close all
+%
 % Get the mirror image file info
 [file, folder] = uigetfile('*.*', 'Select the mirror file');
 mirFile= [folder filesep file];
@@ -112,6 +113,14 @@ for i = 1:numberOfFiles
         lutF = load([lutFolder filesep lutFile]);
         bestColor=lutF.results.bestColor;
         LUT=lutF.results.LUT;
+        
+        %gather input on size of spot and annulus to be analyzed
+        default = {'0.8', '1.2', '1.4'};
+        prompt = {'Fraction of spot to measure', 'Min fraction diameter of annulus', 'Max fraction diameter of annulus'};
+        maskInfo=inputdlg(prompt,'fraction of spot and annulus', 1, default);
+        spotMaskSize = str2num(maskInfo{1});
+        annulusMin = str2num(maskInfo{2});
+        annulusMax = str2num(maskInfo{3});
     end
     
 
@@ -123,10 +132,10 @@ for i = 1:numberOfFiles
             [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotBlock,spotBlockRect);
             
             %Create spot mask
-            FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), 0.8);
+            FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
             
             %Create the annulus mask
-            FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), 1.3);
+            FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
             
         else
             %define inverse tranformation
@@ -143,8 +152,8 @@ for i = 1:numberOfFiles
             [center] = MaskMeasure(binary);
             
             %Define masks based on new centers
-            FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), 0.8);
-            FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), 1.3);
+            FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
+            FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
             
             %Define shifted grid
             [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,channel),row,col,imageSegments{i}(:,:,channel));
