@@ -14,7 +14,7 @@ imshow(data,median(double(data(:)))*[.8 1.2]);
 %%%detect the radius of one spot with imdistline
 h=imdistline(gca);
 position = wait(h);
-defaultans = {'15','20'};
+defaultans = {'15','25'};
 asw = inputdlg({'Minimum radius', 'Maximum radius'},'Spot radius', 1, defaultans);
 minn=str2num(asw{1});
 maxx=str2num(asw{2});
@@ -23,6 +23,24 @@ delete(h);
 close(gcf);
 
 [centers, radii] = imfindcircles(data,[minn maxx],'ObjectPolarity','bright','Sensitivity',0.93);
+
+%Determine if there are any circles overlapping
+D = pdist(centers);
+squareD = squareform(D);
+triangleD = triu(squareD)+tril(ones(size(squareD))*1000);
+indices = find(triangleD<=maxx);
+%If they are overlapping, remove the worst one as rated by
+%imfindcircles(the last one)
+if ~isempty(indices) 
+    [~,j] = ind2sub(size(squareD),indices);
+    j = unique(j);
+    for i = length(j):-1:1
+        centers(j(i),:) = [];
+        radii(j(i),:) = [];
+    end
+end
+
+
 
 %%%draw circles
 figure;imshow(data,median(double(data(:)))*[0.8 1.2]);
