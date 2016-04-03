@@ -24,6 +24,24 @@ close(gcf);
 
 [centers, radii] = imfindcircles(data,[minn maxx],'ObjectPolarity','bright','Sensitivity',0.93);
 
+%Determine if there are any circles overlapping
+D = pdist(centers);
+squareD = squareform(D);
+triangleD = triu(squareD)+tril(ones(size(squareD))*1000);
+indices = find(triangleD<=maxx);
+%If they are overlapping, remove the worst one as rated by
+%imfindcircles(the last one)
+if ~isempty(indices) 
+    [~,j] = ind2sub(size(squareD),indices);
+    j = unique(j);
+    for i = length(j):-1:1
+        centers(j(i),:) = [];
+        radii(j(i),:) = [];
+    end
+end
+
+
+
 %%%draw circles
 figure;imshow(data,median(double(data(:)))*[0.8 1.2]);
 h = viscircles(centers,radii);
