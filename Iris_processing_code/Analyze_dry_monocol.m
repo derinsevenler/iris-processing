@@ -109,8 +109,7 @@ for i = 1:numberOfFiles
             close(g);
             
             spotad=imadjust(spotBlock);
-            level=graythresh(spotad);
-            binary=im2bw(spotad,level);
+            binary = localthresh(spotad);
             [center,rad,minimum,maximum]= CircleDet(binary);
     end
     
