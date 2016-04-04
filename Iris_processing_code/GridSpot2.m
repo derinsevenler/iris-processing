@@ -1,4 +1,4 @@
-%GridSpot2 compares a grid to the detected spot features and only inclues
+%GridSpot2 compares a grid to the detected spot features and only includes
 %spot features that are close to the grid.  detect "false positive" spots and construct the grid used for spots sorting
 
 function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotBlock,varargin)
