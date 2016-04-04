@@ -49,8 +49,8 @@ axis tight
 %% Find peaks
 minPeakWidth = 15;
 maxPeakWidth = 30;
-[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth);
-findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth)
+[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth);
+findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 %% Transpose and repeat
@@ -69,8 +69,8 @@ yProfile2 = imtophat(yProfile,seLine);      %background removed
 yProfile3 = smooth(yProfile2, 3)';
 
 f5 = figure('position',[40 443 285 76]);
-[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth); 
-findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth)
+[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth); 
+findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
 
 %split the image into ROIs with 1 spot per ROI based on the spot centers
 %found above
@@ -90,8 +90,8 @@ y = round(y);
 
 %Calculate threshold of image ROI by ROI such that low signal spots are
 %included.
-for i = 1:length(x)-1
-    for j = 1:length(y)-1
+for i = 1:length(y)-1
+    for j = 1:length(x)-1
         level = graythresh(spotad(y(i):y(i+1),x(j):x(j+1)));
         binary(y(i):y(i+1),x(j):x(j+1)) = im2bw(spotad(y(i):y(i+1),x(j):x(j+1)),level);
     end
