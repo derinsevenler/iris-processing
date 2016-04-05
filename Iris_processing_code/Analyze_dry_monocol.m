@@ -136,7 +136,7 @@ for i = 1:numberOfFiles
         
         %Spot check: discard spots that do not match grid
         if channel==1
-            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotBlock,spotBlockRect);
+            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotad,spotBlockRect);
             
             %Create spot mask
             FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
