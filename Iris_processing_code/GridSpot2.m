@@ -1,7 +1,7 @@
 %GridSpot2 compares a grid to the detected spot features and only includes
 %spot features that are close to the grid.  detect "false positive" spots and construct the grid used for spots sorting
 
-function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotBlock,varargin)
+function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotad,varargin)
 
 if numel(varargin) == 3
     row = varargin{1};
@@ -20,7 +20,7 @@ end
 
 
 %% Create horizontal profile
-xProfile = mean(spotBlock);
+xProfile = mean(spotad);
 f2 = figure('position',[39 346 284 73]);
 plot(xProfile)
 title('horizontal profile')
@@ -53,10 +53,10 @@ title('enhanced horizontal profile')
 axis tight
 
 %% Find peaks
-minPeakWidth = median(ra) - 6*std(ra);
+minPeakWidth = max([median(ra) - 6*std(ra), 5]);
 maxPeakWidth = median(ra) + 3*std(ra);
-[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth);
-findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth)
+[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth);
+findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 %% Transpose and repeat
@@ -64,7 +64,7 @@ findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakPromine
 % for the horizontal spacing. To do this, we simply transpose the image and
 % repeat all the steps used above.
 
-yProfile = mean(spotBlock');                        %peak profile
+yProfile = mean(spotad');                        %peak profile
 ac = xcov(yProfile);                        %cross correlation
 p1 = diff(ac([1 1:end]));
 p2 = diff(ac([1:end end]));
@@ -74,8 +74,8 @@ seLine = strel('line',estPeriod,0);
 yProfile2 = imtophat(yProfile,seLine);      %background removed
 yProfile3 = smooth(yProfile2, 3)';
 
-[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth); 
-findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth)
+[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth); 
+findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
 
 
 
@@ -110,7 +110,7 @@ okbtn = uicontrol('Style', 'pushbutton', 'String', 'ok',...
 nobtn = uicontrol('Style', 'pushbutton', 'String', 'no',...
     'Position', [420 20 50 20],...
     'Callback', @startOver);
-imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
+imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 hold off
@@ -135,7 +135,7 @@ if xyz == 1
         else
             p=figure('Name', 'Select the center of each spot of the first row you want to analyze');
         end
-        imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
+        imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
         g=impoint(gca);
         pause(0.5);
         posDry(z,:)=getPosition(g);
@@ -192,48 +192,43 @@ end
 ind.x=zeros(row,col);
 ind.y=zeros(row,col);
 
-tol=2; %%tol give the radius starting from the center of the spot within the detected spots is not discarded
+tol=1; %%tol give the radius starting from the center of the spot within the detected spots is not discarded
 range=round(mean(ra)*tol);
+incrementReal = 1;
 
-for z=1:length(cent(:,1));
-    xC=cent(z,1);
-    yC=cent(z,2);
     for r=1:row
         for c=1:col
             x=totx(r,c);
             y=toty(r,c);
-            if (xC<x+range&&xC>x-range&&yC<y+range&&yC>y-range)==1
-                fl(r,c,z)=1;
-            else
-                fl(r,c,z)=0;
+            if ~isnan(x)||isnan(y);
+                tempSpots = [x,y;cent];
+                D = pdist(tempSpots);
+                minDist = min(D(1:length(cent)));
+                indSpot = find(D == minDist);
+                if minDist <= range
+                    realCenter(incrementReal,:)= cent(indSpot,:);
+                    realRadius(incrementReal,:) = ra(indSpot,:);
+                    incrementReal = incrementReal +1;
+                    
+                    
+                end
+
             end
         end
     end
-    if (find(fl(:,:,z)==1))~=0
-        log(z)=1;
-    else
-        log(z)=0;
-    end
-end
-
-idxF=find(log==0);
-cent(idxF,:)=[];
-ra(idxF,:)=[];
-
-
 
 
 %% show the grid and the detected spots
 figure(3);
 if numel(varargin) == 3
-    imshow(spotBlock+image);
+    imshow(spotad+image);
 else
-imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
+imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
 end
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 
-plot(cent(:,1),cent(:,2),'go'); %%cent contains just the dectected circles that have a correspondance in the  grid
+plot(realCenter(:,1),realCenter(:,2),'go'); %%realCenter contains just the dectected circles that have a correspondance in the  grid
 hold off
 
 %legend('Grid','Detected','True');
@@ -241,13 +236,13 @@ hold off
 
 %% giving the full FOV coordinates instead of the local coordinates.
 if numel(varargin) == 3
-    center = cent;
-    rad = ra;
+    center = realCenter;
+    rad = realRadius;
 elseif numel(varargin) == 1
-    cent(:,1)=cent(:,1)+spotBlockRect(1);
-    cent(:,2)=cent(:,2)+spotBlockRect(2);
-    center=cent;
-    rad=ra;
+    realCenter(:,1)=realCenter(:,1)+spotBlockRect(1);
+    realCenter(:,2)=realCenter(:,2)+spotBlockRect(2);
+    center=realCenter;
+    rad=realRadius;
     totx=totx+spotBlockRect(1);
     toty=toty+spotBlockRect(2);
 end
