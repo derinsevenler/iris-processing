@@ -53,7 +53,7 @@ title('enhanced horizontal profile')
 axis tight
 
 %% Find peaks
-minPeakWidth = median(ra) - 6*std(ra);
+minPeakWidth = max([median(ra) - 6*std(ra), 5]);
 maxPeakWidth = median(ra) + 3*std(ra);
 [~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth);
 findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.004);%, 'MaxPeakWidth', maxPeakWidth)
