@@ -192,35 +192,30 @@ end
 ind.x=zeros(row,col);
 ind.y=zeros(row,col);
 
-tol=2; %%tol give the radius starting from the center of the spot within the detected spots is not discarded
+tol=1; %%tol give the radius starting from the center of the spot within the detected spots is not discarded
 range=round(mean(ra)*tol);
+incrementReal = 1;
 
-for z=1:length(cent(:,1));
-    xC=cent(z,1);
-    yC=cent(z,2);
     for r=1:row
         for c=1:col
             x=totx(r,c);
             y=toty(r,c);
-            if (xC<x+range&&xC>x-range&&yC<y+range&&yC>y-range)==1
-                fl(r,c,z)=1;
-            else
-                fl(r,c,z)=0;
+            if ~isnan(x)||isnan(y);
+                tempSpots = [x,y;cent];
+                D = pdist(tempSpots);
+                minDist = min(D(1:length(cent)));
+                indSpot = find(D == minDist);
+                if minDist <= range
+                    realCenter(incrementReal,:)= cent(indSpot,:);
+                    realRadius(incrementReal,:) = ra(indSpot,:);
+                    incrementReal = incrementReal +1;
+                    
+                    
+                end
+
             end
         end
     end
-    if (find(fl(:,:,z)==1))~=0
-        log(z)=1;
-    else
-        log(z)=0;
-    end
-end
-
-idxF=find(log==0);
-cent(idxF,:)=[];
-ra(idxF,:)=[];
-
-
 
 
 %% show the grid and the detected spots
@@ -233,7 +228,7 @@ end
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 
-plot(cent(:,1),cent(:,2),'go'); %%cent contains just the dectected circles that have a correspondance in the  grid
+plot(realCenter(:,1),realCenter(:,2),'go'); %%realCenter contains just the dectected circles that have a correspondance in the  grid
 hold off
 
 %legend('Grid','Detected','True');
@@ -241,13 +236,13 @@ hold off
 
 %% giving the full FOV coordinates instead of the local coordinates.
 if numel(varargin) == 3
-    center = cent;
-    rad = ra;
+    center = realCenter;
+    rad = realRadius;
 elseif numel(varargin) == 1
-    cent(:,1)=cent(:,1)+spotBlockRect(1);
-    cent(:,2)=cent(:,2)+spotBlockRect(2);
-    center=cent;
-    rad=ra;
+    realCenter(:,1)=realCenter(:,1)+spotBlockRect(1);
+    realCenter(:,2)=realCenter(:,2)+spotBlockRect(2);
+    center=realCenter;
+    rad=realRadius;
     totx=totx+spotBlockRect(1);
     toty=toty+spotBlockRect(2);
 end
