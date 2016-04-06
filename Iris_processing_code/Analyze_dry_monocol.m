@@ -144,6 +144,9 @@ for i = 1:numberOfFiles
             %Create the annulus mask
             FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
             
+            %Create corners mask
+            FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy);
+            
         else
             %define inverse tranformation
             invtform{i}{channel} = invert(tform{i}{channel});
