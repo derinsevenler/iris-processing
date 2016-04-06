@@ -165,19 +165,27 @@ for i = 1:numberOfFiles
             FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
             FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
             
+            
             %Define shifted grid
             [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,channel),row,col,imageSegments{i}(:,:,channel));
+            
+            %Define corner mask based on shifted grid
+            FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy);
         end
 
         %   Calculate the median value of each region
         [~, spotMed{i}(:,:,channel)] = MaskMeasure(imageSegments{i}(:,:,channel), FOVSpotMask{i}(:,:,channel), gridx, gridy);
         [~, annulusMed{i}(:,:,channel)] = MaskMeasure(imageSegments{i}(:,:,channel), FOVAnnulusMask{i}(:,:,channel), gridx, gridy);
+        [~, cornerMed{i}(:,:,channel)] = CornerMaskMeasure(imageSegments{i}(:,:,channel), FOVCornerMask{i}(:,:,channel), gridx, gridy);
+        
         DiffMed{i}(:,:,channel) = spotMed{i}(:,:,channel) - annulusMed{i}(:,:,channel);
         
         % Apply the LUT 
         spotLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), spotMed{i}(:,:,channel), 'nearest', 0);
         annulusLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), annulusMed{i}(:,:,channel), 'nearest', 0);
-        DiffLUT{i}(:,:,channel) = spotLUT{i}(:,:,channel) - annulusLUT{i}(:,:,channel);
+        cornerLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), cornerMed{i}(:,:,channel), 'nearest', 0);
+        annulusDiffLUT{i}(:,:,channel) = spotLUT{i}(:,:,channel) - annulusLUT{i}(:,:,channel);
+        cornerDiffLUT{i}(:,:,channel) = spotLUT{i}(:,:,channel) - cornerLUT{i}(:,:,channel);
         %progressbar(channel/numIm)
     end
   
@@ -196,7 +204,9 @@ for i = 1:numberOfFiles
     DiffMed{1} = rot90(DiffMed{1}, 3);
     spotLUT{1} = rot90(spotLUT{1}, 3);
     annulusLUT{1} = rot90(annulusLUT{1}, 3);
-    DiffLUT{1} = rot90(DiffLUT{1}, 3);
+    cornerLUT{1} = rot90(cornerLUT{1}, 3);
+    annulusDiffLUT{1} = rot90(annulusDiffLUT{1}, 3);
+    cornerDiffLUT{1} = rot90(cornerDiffLUT{1}, 3);
     %%
     %break data into arrays based on incubation blocks
     spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rows, columns);
@@ -204,7 +214,9 @@ for i = 1:numberOfFiles
     diffRaw = reformatData(DiffMed{i}, numberOfBlocks, rows, columns);
     spotsHeight = reformatData(spotLUT{i}, numberOfBlocks, rows, columns);
     annulusHeight= reformatData(annulusLUT{i}, numberOfBlocks, rows, columns);
-    diffHeight = reformatData(DiffLUT{i}, numberOfBlocks, rows, columns);
+    cornerHeight= reformatData(cornerLUT{i}, numberOfBlocks, rows, columns);
+    annulusdiffHeight = reformatData(annulusDiffLUT{i}, numberOfBlocks, rows, columns);
+    cornerdiffHeight = reformatData(cornerDiffLUT{i}, numberOfBlocks, rows, columns);
     
     %reformat for final output with all the data
     for syzygy = 1:numberOfBlocks 
@@ -213,7 +225,9 @@ for i = 1:numberOfFiles
     results.raw.diff {foo + syzygy-1} = diffRaw{syzygy};
     results.height.spots{foo + syzygy-1} = spotsHeight{syzygy};
     results.height.annulus{foo + syzygy-1} = annulusHeight{syzygy};
-    results.height.diff{foo + syzygy-1} = diffHeight{syzygy};
+    results.height.corner{foo + syzygy-1} = cornerHeight{syzygy};
+    results.height.annulusdiff{foo + syzygy-1} = annulusdiffHeight{syzygy};
+    results.height.cornerdiff{foo + syzygy-1} = cornerdiffHeight{syzygy};
     end
     
     %increment block tracker
