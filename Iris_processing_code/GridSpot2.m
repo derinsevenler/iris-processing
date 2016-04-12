@@ -249,7 +249,9 @@ hold off
 %% giving the full FOV coordinates instead of the local coordinates.
 if numel(varargin) == 3
     center = realCenter;
-    rad = realRadius;
+    %stick to the original order of radii if it is called using extra
+    %varargin.
+    rad = ra;
 elseif numel(varargin) == 1
     realCenter(:,1)=realCenter(:,1)+spotBlockRect(1);
     realCenter(:,2)=realCenter(:,2)+spotBlockRect(2);

@@ -161,15 +161,12 @@ for i = 1:numberOfFiles
             binary=im2bw(spotad,level);
             [center] = MaskMeasure(binary);
             
-            %Define masks based on new centers
-            FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
-            FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
-            
-            
             %Define shifted grid
             [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,channel),row,col,imageSegments{i}(:,:,channel));
             
-            %Define corner mask based on shifted grid
+            %Define masks based on new centers
+            FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
+            FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
             FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy);
         end
 
