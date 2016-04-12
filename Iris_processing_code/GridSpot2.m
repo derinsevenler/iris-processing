@@ -228,7 +228,7 @@ end
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 
-plot(realCenter(:,1),realCenter(:,2),'go'); %%realCenter contains just the dectected circles that have a correspondance in the  grid
+plot(realCenter(:,1),realCenter(:,2),'g+'); %%realCenter contains just the dectected circles that have a correspondance in the  grid
 hold off
 
 %legend('Grid','Detected','True');
