@@ -238,6 +238,11 @@ for i = 1:numberOfFiles
     %results.spotMasks{i} = FOVSpotMask{i};
     %results.annulusMasks{i} = FOVAnnulusMask{i};
     results.LUT = LUT;
+    results.spotBlockRect = spotBlockRect;
+    results.cropFOVCord = cropFOVCord;
+    results.selfRefRegion = selfRefRegion;
+    results.tifFile = tifFile;
+    results.mirFile = mirFile;
     
 end
 
