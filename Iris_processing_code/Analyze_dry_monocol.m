@@ -121,16 +121,21 @@ for i = 1:numberOfFiles
         bestColor=lutF.results.bestColor;
         LUT=lutF.results.LUT;
         
-        %gather input on size of spot and annulus to be analyzed
-        default = {'0.8', '1.2', '1.4'};
-        prompt = {'Fraction of spot to measure', 'Min fraction diameter of annulus', 'Max fraction diameter of annulus'};
-        maskInfo=inputdlg(prompt,'fraction of spot and annulus', 1, default);
+        %gather input on size of spot and annulus to be analyzed %gather input data on size of blocks
+        default = {'0.8', '1.2', '1.4','10','4', '10', '10'};
+        prompt = {'Fraction of spot to measure', 'Min fraction diameter of annulus', 'Max fraction diameter of annulus', 'radius of corner','how many blocks are you analyzing?', 'rows per block', 'columns per block'};
+        maskInfo=inputdlg(prompt,'measurement properties and slide format', 1, default);
         spotMaskSize = str2num(maskInfo{1});
         annulusMin = str2num(maskInfo{2});
         annulusMax = str2num(maskInfo{3});
+        cornerSize = str2num(maskInfo{4});
+        numberOfBlocks = str2num(maskInfo{5});
+        columnsBlock = str2num(maskInfo{6});
+        rowsBlock = str2num(maskInfo{7});
+        
     end
     
-
+%%
     %progressbar('timesteps')
     for channel=1:numIm
         
@@ -145,7 +150,8 @@ for i = 1:numberOfFiles
             FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
             
             %Create corners mask
-            FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy);
+            FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
+            imshow(im1+FOVCornerMask{1}(:,:,1))
             
         else
             %define inverse tranformation
@@ -167,7 +173,7 @@ for i = 1:numberOfFiles
             %Define masks based on new centers
             FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
             FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
-            FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy);
+            FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
         end
 
         %   Calculate the median value of each region
@@ -187,13 +193,7 @@ for i = 1:numberOfFiles
     end
   
     %%
-    %gather input data on size of blocks
-    default = {'4', '10', '10'};
-    prompt = {'how many blocks did you just analyze?', 'rows per block', 'columns per block'};
-    format=inputdlg(prompt,'format of slide', 1, default);
-    numberOfBlocks = str2num(format{1});
-    columns = str2num(format{2});
-    rows = str2num(format{3});
+
     %%
     %rotate such that the left side is the top like in the printer
     spotMed{1} = rot90(spotMed{1}, 3);
@@ -206,14 +206,14 @@ for i = 1:numberOfFiles
     cornerDiffLUT{1} = rot90(cornerDiffLUT{1}, 3);
     %%
     %break data into arrays based on incubation blocks
-    spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rows, columns);
-    annulusRaw = reformatData(annulusMed{i}, numberOfBlocks, rows, columns);
-    diffRaw = reformatData(DiffMed{i}, numberOfBlocks, rows, columns);
-    spotsHeight = reformatData(spotLUT{i}, numberOfBlocks, rows, columns);
-    annulusHeight= reformatData(annulusLUT{i}, numberOfBlocks, rows, columns);
-    cornerHeight= reformatData(cornerLUT{i}, numberOfBlocks, rows, columns);
-    annulusdiffHeight = reformatData(annulusDiffLUT{i}, numberOfBlocks, rows, columns);
-    cornerdiffHeight = reformatData(cornerDiffLUT{i}, numberOfBlocks, rows, columns);
+    spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    annulusRaw = reformatData(annulusMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    diffRaw = reformatData(DiffMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    spotsHeight = reformatData(spotLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    annulusHeight= reformatData(annulusLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    cornerHeight= reformatData(cornerLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    annulusdiffHeight = reformatData(annulusDiffLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    cornerdiffHeight = reformatData(cornerDiffLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
     
     %reformat for final output with all the data
     for syzygy = 1:numberOfBlocks 

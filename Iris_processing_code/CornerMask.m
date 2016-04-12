@@ -1,15 +1,18 @@
-function [ mask ] = CornerMask( image, gridx, gridy )
+function [ mask ] = CornerMask( image, gridx, gridy, cornerSize, rowsBlock, columnsBlock )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
 mask = zeros(size(image));
 
-cornerSize = 10;
+
 
 indx = find(isnan(gridx));
 indy = find(isnan(gridy));
 gridx(indx) = [];
 gridy(indy) = [];
+
+xgaps = size(gridx,2)/columnsBlock -1;
+ygaps = size(gridy,1)/rowsBlock - 1;
 
 row = size(gridx,1);
 col = size(gridx,2);
@@ -32,8 +35,22 @@ yEdges(2:end-1) = yCenters(1:end-1) + diffy/2;
 xEdges(end) = xCenters(end) + diffx(end)/2;
 yEdges(end) = yCenters(end) + diffy(end)/2;
 
-gridx = repmat(xEdges,row+1,1);
-gridy = repmat(yEdges,1,col+1);
+if xgaps >= 1;
+for i = 1 : xgaps
+    xEdges = [xEdges(1:columnsBlock*i) (xEdges(columnsBlock*i) + median(diffx)) xEdges(columnsBlock*i:end)];
+    xEdges(columnsBlock*i+2+i) = xEdges(columnsBlock*i+3+i) - median(diffx);
+end
+end
+
+if ygaps >= 1;
+for i = 1 : ygaps
+    yEdges = [yEdges(1:rowsBlock*i); (yEdges(rowsBlock*i) + median(diffy)); yEdges(rowsBlock*i:end)];
+    yEdges(rowsBlock*i+2+i) = yEdges(rowsBlock*i+3+i) - median(diffy);
+end
+end
+
+gridx = repmat(xEdges,length(yEdges),1);
+gridy = repmat(yEdges,1,length(xEdges));
 for i = 1 : size(gridx,1)
     for j = 1 : size(gridx,2)
         mask = MidpointDisk(mask, cornerSize,gridy(i,j), gridx(i,j), 1);
