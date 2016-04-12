@@ -78,8 +78,8 @@ yProfile3 = smooth(yProfile2, 3)';
 findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
 
 
-
-
+wxyz = 0;
+while wxyz ~= 3
 %% creating the center matrix
 totx = repmat(xCenters,row,1);
 toty = repmat(yCenters',1,col);
@@ -100,22 +100,34 @@ end
 
 
 %% Show centers of calculated spots and get user input on if it is good enough
-xy = figure('Position', [200 200 500 500], 'Name', 'Are the calculated spot centers lining up with the spots?');
+xy = figure('Position', [200 200 600 600], 'Name', 'Are the calculated spot centers lining up with the spots?');
 
 % Create ok push button
 okbtn = uicontrol('Style', 'pushbutton', 'String', 'ok',...
     'Position', [20 20 50 20],...
     'Callback', @continueCB);
-% Create ok push button
-nobtn = uicontrol('Style', 'pushbutton', 'String', 'no',...
-    'Position', [420 20 50 20],...
-    'Callback', @startOver);
+% Create add column push button
+columnbtn = uicontrol('Style', 'pushbutton', 'String', 'add column',...
+    'Position', [390 20 100 20],...
+    'Callback', @newColumn);
+% Create add row push button
+rowbtn = uicontrol('Style', 'pushbutton', 'String', 'add row',...
+    'Position', [320 20 50 20],...
+    'Callback', @newRow);
 imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 hold off
 
 waitfor(xy)
+
+if wxyz == 1
+    xCenters = sort([xCenters, xcolumn]);
+elseif wxyz == 2
+    yCenters = sort([yCenters, yrow]);
+end
+end
+
 close(f2)
 close(f3)
 close(f4)
@@ -124,63 +136,63 @@ close(f4)
 
 %% Perform manual gridding only if automatic gridding failed
 
-if xyz == 1
-    clear totx toty
-    %% save in posDry the coordinates of the first row of spots
-    
-    
-    for z=1:(col+1)
-        if z==col+1
-            p=figure('Name','Select the center of the first spot of the second row you want to analyze');
-        else
-            p=figure('Name', 'Select the center of each spot of the first row you want to analyze');
-        end
-        imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
-        g=impoint(gca);
-        pause(0.5);
-        posDry(z,:)=getPosition(g);
-        delete(p);
-        close(gcf);
-    end
-    %
-    %% distance between spots
-    p1=posDry(1,:);
-    p2=posDry(col+1,:);
-    distx=p2(1)-p1(1);
-    disty=p2(2)-p1(2);
-    %
-    % %% create the grid
-    
-    if distx==0
-        addx=zeros(1,row);
-    else
-        if row>1
-            addx=[0:distx:distx*(row-1)];
-        else
-            addx=0;
-        end
-    end
-    
-    if disty==0
-        addy=zeros(1,row);
-    else
-        if row>1
-            addy=[0:disty:disty*(row-1)];
-        else
-            addy=0;
-        end
-    end
-    
-    for j=1:col
-        %% coordinates of the spots on the other rows
-        totx(j,1:length(addx))=posDry(j,1)+addx;
-        toty(j,1:length(addy))=posDry(j,2)+addy;
-    end
-    
-    totx=totx';
-    toty=toty';
-    
-end
+% if xyz == 1
+%     clear totx toty
+%     %% save in posDry the coordinates of the first row of spots
+%     
+%     
+%     for z=1:(col+1)
+%         if z==col+1
+%             p=figure('Name','Select the center of the first spot of the second row you want to analyze');
+%         else
+%             p=figure('Name', 'Select the center of each spot of the first row you want to analyze');
+%         end
+%         imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
+%         g=impoint(gca);
+%         pause(0.5);
+%         posDry(z,:)=getPosition(g);
+%         delete(p);
+%         close(gcf);
+%     end
+%     %
+%     %% distance between spots
+%     p1=posDry(1,:);
+%     p2=posDry(col+1,:);
+%     distx=p2(1)-p1(1);
+%     disty=p2(2)-p1(2);
+%     %
+%     % %% create the grid
+%     
+%     if distx==0
+%         addx=zeros(1,row);
+%     else
+%         if row>1
+%             addx=[0:distx:distx*(row-1)];
+%         else
+%             addx=0;
+%         end
+%     end
+%     
+%     if disty==0
+%         addy=zeros(1,row);
+%     else
+%         if row>1
+%             addy=[0:disty:disty*(row-1)];
+%         else
+%             addy=0;
+%         end
+%     end
+%     
+%     for j=1:col
+%         %% coordinates of the spots on the other rows
+%         totx(j,1:length(addx))=posDry(j,1)+addx;
+%         toty(j,1:length(addy))=posDry(j,2)+addy;
+%     end
+%     
+%     totx=totx';
+%     toty=toty';
+%     
+% end
 
 
 
@@ -251,11 +263,17 @@ end
 %% Callback functions
 
     function continueCB(hObject, callbackdata)
-        xyz=0;
+        wxyz = 3;
         close(xy)
     end
-    function startOver(hObject, callbackdata)
-        xyz=1;
+    function newColumn(hObject, callbackdata)
+        wxyz=1;
+        [xcolumn,~] = ginput(1);
+        close(xy)
+    end
+ function newRow(hObject, callbackdata)
+        wxyz=2;
+        [~,yrow] = ginput(1);
         close(xy)
     end
 
