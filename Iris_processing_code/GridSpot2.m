@@ -79,10 +79,10 @@ findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminen
 
 
 wxyz = 0;
-while wxyz ~= 3
+while wxyz ~= 5
 %% creating the center matrix
-totx = repmat(xCenters,row,1);
-toty = repmat(yCenters',1,col);
+totx = repmat(xCenters,length(yCenters),1);
+toty = repmat(yCenters',1,length(xCenters));
 
 %% Pad totx and toty to match the size of the col and row,to avoid plotting errors and show failed spot detection.
 if size(totx,1)<row
@@ -114,6 +114,14 @@ columnbtn = uicontrol('Style', 'pushbutton', 'String', 'add column',...
 rowbtn = uicontrol('Style', 'pushbutton', 'String', 'add row',...
     'Position', [320 20 50 20],...
     'Callback', @newRow);
+% Create delete row push button
+delrowbtn = uicontrol('Style', 'pushbutton', 'String', 'delete row',...
+    'Position', [230 20 80 20],...
+    'Callback', @deleteRow);
+% Create delete column push button
+delcolumnbtn = uicontrol('Style', 'pushbutton', 'String', 'delete column',...
+    'Position', [120 20 100 20],...
+    'Callback', @deleteColumn);
 imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
@@ -125,6 +133,12 @@ if wxyz == 1
     xCenters = sort([xCenters, xcolumn]);
 elseif wxyz == 2
     yCenters = sort([yCenters, yrow]);
+elseif wxyz == 3
+    [~, I] = min(abs(yCenters - yrow), [] ,'omitnan');
+    yCenters(I) = [];
+elseif wxyz == 4
+     [~, I] = min(abs(xCenters - xcolumn), [] ,'omitnan');
+    xCenters(I) = [];
 end
 end
 
@@ -265,7 +279,7 @@ end
 %% Callback functions
 
     function continueCB(hObject, callbackdata)
-        wxyz = 3;
+        wxyz = 5;
         close(xy)
     end
     function newColumn(hObject, callbackdata)
@@ -278,7 +292,16 @@ end
         [~,yrow] = ginput(1);
         close(xy)
     end
-
+ function deleteRow(hObject, callbackdata)
+        wxyz=3;
+        [~,yrow] = ginput(1);
+        close(xy)
+ end
+function deleteColumn(hObject, callbackdata)
+        wxyz=4;
+        [xcolumn,~] = ginput(1);
+        close(xy)
+    end
 end
 
 
