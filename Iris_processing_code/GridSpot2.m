@@ -218,7 +218,11 @@ close(f4)
 ind.x=zeros(row,col);
 ind.y=zeros(row,col);
 
+if numel(varargin) == 1 %if it is initial spot discovery be stringent
 tol=1; %%tol give the radius starting from the center of the spot within the detected spots is not discarded
+elseif numel(varargin) == 3 %if it is spot confirmation, just take all the spots that were there to begin with.
+    tol = 3;
+end
 range=round(mean(ra)*tol);
 incrementReal = 1;
 
@@ -229,8 +233,7 @@ incrementReal = 1;
             if ~isnan(x)||isnan(y);
                 tempSpots = [x,y;cent];
                 D = pdist(tempSpots);
-                minDist = min(D(1:length(cent)));
-                indSpot = find(D == minDist);
+                [minDist, indSpot]  = min(D(1:length(cent)));
                 if minDist <= range
                     realCenter(incrementReal,:)= cent(indSpot,:);
                     realRadius(incrementReal,:) = ra(indSpot,:);
