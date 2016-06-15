@@ -6,10 +6,13 @@ mask = zeros(size(image));
 
 
 
-indx = find(isnan(gridx));
-indy = find(isnan(gridy));
-gridx(indx) = [];
-gridy(indy) = [];
+%indx = find(isnan(gridx));
+%indy = find(isnan(gridy));
+gridx = gridx(:,all(~isnan(gridx))); %removes nan columns
+gridy = gridy(:,all(~isnan(gridy))); %removes nan columns
+gridx = gridx(~all(isnan(gridx),2),:) %removes nan rows
+gridy = gridy(~all(isnan(gridy),2),:) %removes nan rows
+%gridy(indy) = [];
 
 xgaps = size(gridx,2)/columnsBlock -1;
 ygaps = size(gridy,1)/rowsBlock - 1;
