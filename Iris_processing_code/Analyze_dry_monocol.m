@@ -195,15 +195,15 @@ for i = 1:numberOfFiles
     %%
 
     %%
-    %rotate such that the left side is the top like in the printer
-    spotMed{1} = rot90(spotMed{1}, 3);
-    annulusMed{1} = rot90(annulusMed{1}, 3);
-    DiffMed{1} = rot90(DiffMed{1}, 3);
-    spotLUT{1} = rot90(spotLUT{1}, 3);
-    annulusLUT{1} = rot90(annulusLUT{1}, 3);
-    cornerLUT{1} = rot90(cornerLUT{1}, 3);
-    annulusDiffLUT{1} = rot90(annulusDiffLUT{1}, 3);
-    cornerDiffLUT{1} = rot90(cornerDiffLUT{1}, 3);
+%     %rotate such that the left side is the top like in the printer
+%     spotMed{1} = rot90(spotMed{1}, 3);
+%     annulusMed{1} = rot90(annulusMed{1}, 3);
+%     DiffMed{1} = rot90(DiffMed{1}, 3);
+%     spotLUT{1} = rot90(spotLUT{1}, 3);
+%     annulusLUT{1} = rot90(annulusLUT{1}, 3);
+%     cornerLUT{1} = rot90(cornerLUT{1}, 3);
+%     annulusDiffLUT{1} = rot90(annulusDiffLUT{1}, 3);
+%     cornerDiffLUT{1} = rot90(cornerDiffLUT{1}, 3);
     %%
     %break data into arrays based on incubation blocks
     spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
