@@ -5,16 +5,16 @@ clearvars
 close all
 %
 % Get the mirror image file info
-[file, folder] = uigetfile('*.*', 'Select the mirror file');
-mirFile= [folder filesep file];
+[mirror.file, mirror.folder] = uigetfile('*.*', 'Select the mirror file');
+mirror.path= [mirror.folder filesep mirror.file];
 
 % Get the tiff Image or images if you want to do a full slide
-[dataFile, dataFolder]= uigetfile('*.*', 'Select the 4 files (TIFF image stack also)', 'MultiSelect', 'on');
+[data.File, data.Folder]= uigetfile('*.*', 'Select the 4 files (TIFF image stack also)', 'MultiSelect', 'on');
 
-if ischar(dataFile) == 1
+if ischar(data.File) == 1
     numberOfFiles = 1;
 else
-    numberOfFiles = numel(dataFile);
+    numberOfFiles = numel(data.File);
 end
 
 %tracker for # of blocks
@@ -23,51 +23,51 @@ foo = 1;
 %% open, crop the ROI, and align all images %%%
 for i = 1:numberOfFiles
     
-    if ischar(dataFile) == 1
-        tifFile = fullfile(dataFolder, dataFile);
+    if ischar(data.File) == 1
+        data.Path = fullfile(data.Folder, data.File);
     else
-        tifFile= fullfile(dataFolder, dataFile{i});
+        data.Path= fullfile(data.Folder, data.File{i});
     end
     
-    %number of timesteps
-    info=imfinfo(tifFile);
-    numIm=numel(info);
+    %number of timeSteps
+    info=imfinfo(data.Path);
+    data.timeSteps=numel(info);
     
     
     %Alignment of each image
     color=1;
     nColor=1;
-    im1 = imread(tifFile, color);
+    data.image = imread(data.Path, color);
    
-    if ischar(file) == 1
-        mir=imread(mirFile,1);
+    if ischar(mirror.file) == 1
+        mir=imread(mirror.path,1);
     else
-        mir = ones(size(im1));
+        mir = ones(size(data.image));
         h = warndlg('No mirror was selected and thus the image was not normalized (divided by 1)');
         waitfor(h)
     end
     
-    im1=double(im1)./double(mir);
+    data.image=double(data.image)./double(mir);
     
     %Select the regions of each image you want to analyze. These will be
     %aligned and concatenated.
     j = figure('Name','Please select the FOV you want to use from this image ');
-    [im1, cropFOVCord] = imcrop(im1, median(double(im1(:)))*[.8, 1.2]);
+    [data.image, cropFOVCord] = imcrop(data.image, median(double(data.image(:)))*[.8, 1.2]);
     close(j);
-    alignedBlocks{i}(:,:,1) = im1;
-    imageSegments{i}(:,:,1) = im1;
+    alignedBlocks{i}(:,:,1) = data.image;
+    imageSegments{i}(:,:,1) = data.image;
     
     
     %%%Perform initial alignment over full FOV
-    for channel = 2:numIm
-        I = imread(tifFile,channel);
+    for timeStep = 2:data.timeSteps
+        I = imread(data.Path,timeStep);
         im=double(I)./double(mir);
         im = imcrop(im, cropFOVCord);
-        [Ial,tform{i}{channel}]=features(im1,im);
+        [Ial,tform{i}{timeStep}]=features(data.image,im);
         
-        alignedBlocks{i}(:,:,channel) = Ial;
-        imageSegments{i}(:,:,channel) = im;
-        progressbar(channel/numIm)
+        alignedBlocks{i}(:,:,timeStep) = Ial;
+        imageSegments{i}(:,:,timeStep) = im;
+        progressbar(timeStep/data.timeSteps)
     end
     
 
@@ -75,23 +75,23 @@ for i = 1:numberOfFiles
 
     %Selecting a silicon reference region
     f=figure('Name','Please select a region of bare Si');
-    [~, selfRefRegion] = imcrop(im1);
+    [~, selfRefRegion] = imcrop(data.image);
     close(f);
 
-    for channel = 2:numIm
+    for timeStep = 2:data.timeSteps
         
-        Ial = Alignmentchecker(im1, alignedBlocks{i}(:,:,channel));
+        Ial = Alignmentchecker(data.image, alignedBlocks{i}(:,:,timeStep));
         
         sRef = imcrop(Ial, selfRefRegion);
         Ialpost= Ial./median(sRef(:));
-        alignedBlocks{i}(:,:,channel)=Ialpost;
-        progressbar(channel/numIm)
+        alignedBlocks{i}(:,:,timeStep)=Ialpost;
+        progressbar(timeStep/data.timeSteps)
     end
     
-    sRef=imcrop(im1,selfRefRegion);
+    sRef=imcrop(data.image,selfRefRegion);
     imageSegments{i}(:,:,1) = imageSegments{i}(:,:,1)./median(sRef(:));
     alignedBlocks{i}(:,:,1) = alignedBlocks{i}(:,:,1)./median(sRef(:));
-    im1Old=alignedBlocks{i}(:,:,1);
+    data.imageOld=alignedBlocks{i}(:,:,1);
     
     %% Find spots and measure their values.
     %%%Detect spots
@@ -105,7 +105,7 @@ for i = 1:numberOfFiles
     if color==1
 
             g=figure('Name','crop one region containing all the spots you wish to analyze');
-            [spotBlock, spotBlockRect] = imcrop(im1Old, median(double(im1Old(:)))*[.8, 1.2]);
+            [spotBlock, spotBlockRect] = imcrop(data.imageOld, median(double(data.imageOld(:)))*[.8, 1.2]);
             close(g);
             
             spotad=imadjust(spotBlock);
@@ -136,60 +136,60 @@ for i = 1:numberOfFiles
     end
     
 %%
-    %progressbar('timesteps')
-    for channel=1:numIm
+    %progressbar('timeSteps')
+    for timeStep=1:data.timeSteps
         
         %Spot check: discard spots that do not match grid
-        if channel==1
+        if timeStep==1
             [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotad,spotBlockRect);
             
             %Create spot mask
-            FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
+            FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, rad, center(:,2), center(:,1), spotMaskSize);
             
             %Create the annulus mask
-            FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
+            FOVAnnulusMask{i}(:,:,timeStep) = annulusMask(data.image, rad, center(:,2), center(:,1), annulusMin, annulusMax);
             
             %Create corners mask
-            FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
-            imshow(im1+FOVCornerMask{1}(:,:,1))
+            FOVCornerMask{i}(:,:,timeStep) = CornerMask(data.image,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
+            imshow(data.image+FOVCornerMask{1}(:,:,1))
             
         else
             %define inverse tranformation
-            invtform{i}{channel} = invert(tform{i}{channel});
+            invtform{i}{timeStep} = invert(tform{i}{timeStep});
             
             %Apply tranformation to mask
             outputView = imref2d(size(FOVSpotMask{i}(:,:,1)));
-            FOVSpotMask{i}(:,:,channel) = imwarp(FOVSpotMask{i}(:,:,1),invtform{i}{channel},'OutputView',outputView);
+            FOVSpotMask{i}(:,:,timeStep) = imwarp(FOVSpotMask{i}(:,:,1),invtform{i}{timeStep},'OutputView',outputView);
             
             %find circles centers of transformed mask
-            spotad=imadjust(FOVSpotMask{i}(:,:,channel));
+            spotad=imadjust(FOVSpotMask{i}(:,:,timeStep));
             level=graythresh(spotad);
             binary=im2bw(spotad,level);
             [center] = MaskMeasure(binary);
             
             %Define shifted grid
-            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,channel),row,col,imageSegments{i}(:,:,channel));
+            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,timeStep),row,col,imageSegments{i}(:,:,timeStep));
             
             %Define masks based on new centers
-            FOVSpotMask{i}(:,:,channel) = spotMask(im1, rad, center(:,2), center(:,1), spotMaskSize);
-            FOVAnnulusMask{i}(:,:,channel) = annulusMask(im1, rad, center(:,2), center(:,1), annulusMin, annulusMax);
-            FOVCornerMask{i}(:,:,channel) = CornerMask(im1,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
+            FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, rad, center(:,2), center(:,1), spotMaskSize);
+            FOVAnnulusMask{i}(:,:,timeStep) = annulusMask(data.image, rad, center(:,2), center(:,1), annulusMin, annulusMax);
+            FOVCornerMask{i}(:,:,timeStep) = CornerMask(data.image,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
         end
 
         %   Calculate the median value of each region
-        [~, spotMed{i}(:,:,channel)] = MaskMeasure(imageSegments{i}(:,:,channel), FOVSpotMask{i}(:,:,channel), gridx, gridy);
-        [~, annulusMed{i}(:,:,channel)] = MaskMeasure(imageSegments{i}(:,:,channel), FOVAnnulusMask{i}(:,:,channel), gridx, gridy);
-        [~, cornerMed{i}(:,:,channel)] = CornerMaskMeasure(imageSegments{i}(:,:,channel), FOVCornerMask{i}(:,:,channel), gridx, gridy);
+        [~, spotMed{i}(:,:,timeStep)] = MaskMeasure(imageSegments{i}(:,:,timeStep), FOVSpotMask{i}(:,:,timeStep), gridx, gridy);
+        [~, annulusMed{i}(:,:,timeStep)] = MaskMeasure(imageSegments{i}(:,:,timeStep), FOVAnnulusMask{i}(:,:,timeStep), gridx, gridy);
+        [~, cornerMed{i}(:,:,timeStep)] = CornerMaskMeasure(imageSegments{i}(:,:,timeStep), FOVCornerMask{i}(:,:,timeStep), gridx, gridy);
         
-        DiffMed{i}(:,:,channel) = spotMed{i}(:,:,channel) - annulusMed{i}(:,:,channel);
+        DiffMed{i}(:,:,timeStep) = spotMed{i}(:,:,timeStep) - annulusMed{i}(:,:,timeStep);
         
         % Apply the LUT 
-        spotLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), spotMed{i}(:,:,channel), 'nearest', 0);
-        annulusLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), annulusMed{i}(:,:,channel), 'nearest', 0);
-        cornerLUT{i}(:,:,channel) = interp1(LUT(:,2), LUT(:,1), cornerMed{i}(:,:,channel), 'nearest', 0);
-        annulusDiffLUT{i}(:,:,channel) = spotLUT{i}(:,:,channel) - annulusLUT{i}(:,:,channel);
-        cornerDiffLUT{i}(:,:,channel) = spotLUT{i}(:,:,channel) - cornerLUT{i}(:,:,channel);
-        %progressbar(channel/numIm)
+        spotLUT{i}(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMed{i}(:,:,timeStep), 'nearest', 0);
+        annulusLUT{i}(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), annulusMed{i}(:,:,timeStep), 'nearest', 0);
+        cornerLUT{i}(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), cornerMed{i}(:,:,timeStep), 'nearest', 0);
+        annulusDiffLUT{i}(:,:,timeStep) = spotLUT{i}(:,:,timeStep) - annulusLUT{i}(:,:,timeStep);
+        cornerDiffLUT{i}(:,:,timeStep) = spotLUT{i}(:,:,timeStep) - cornerLUT{i}(:,:,timeStep);
+        %progressbar(timeStep/data.timeSteps)
     end
   
     %%
@@ -238,8 +238,8 @@ for i = 1:numberOfFiles
     results.spotBlockRect = spotBlockRect;
     results.cropFOVCord = cropFOVCord;
     results.selfRefRegion = selfRefRegion;
-    results.tifFile = tifFile;
-    results.mirFile = mirFile;
+    results.dataPath = data.Path;
+    results.mirpath = mirror.path;
     
 end
 
