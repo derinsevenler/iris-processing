@@ -100,20 +100,6 @@ for i = 1:numberOfFiles
     %%% stacks.
     
     
-    %Find features that look like spots
-    %filt=align;
-    if color==1
-
-            g=figure('Name','crop one region containing all the spots you wish to analyze');
-            [spotBlock, spotBlockRect] = imcrop(data.imageOld, median(double(data.imageOld(:)))*[.8, 1.2]);
-            close(g);
-            
-            spotad=imadjust(spotBlock);
-            binary = localthresh(spotad);
-            [center,rad,minimum,maximum]= CircleDet(binary);
-    end
-    
-    
     %Find LUT if this is the first block analyzed of this slide
     if i == 1
         [lutFile, lutFolder] = uigetfile('*.mat', 'Select the results file with the lookup table you wish to use');
@@ -139,15 +125,27 @@ for i = 1:numberOfFiles
     %progressbar('timeSteps')
     for timeStep=1:data.timeSteps
         
-        %Spot check: discard spots that do not match grid
+        %Spot check:1:find spots, 2: discard spots that do not match grid
         if timeStep==1
-            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,spotad,spotBlockRect);
+            
+            %Find ROI
+            g=figure('Name','crop one region containing all the spots you wish to analyze');
+            [spotBlock, spotBlockRect] = imcrop(data.imageOld, median(double(data.imageOld(:)))*[.8, 1.2]);
+            close(g);
+            
+            %Find spots
+            spotad=imadjust(spotBlock);
+            binary = localthresh(spotad);
+            [spot.center(:,:,timeStep),spot.radius,minimum,maximum]= CircleDet(binary);
+            
+            %Validate spots
+            [spot.validatedCenter(:,:,timeStep),spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.center(:,:,timeStep),spot.radius,spotad,spotBlockRect);
             
             %Create spot mask
-            FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, rad, center(:,2), center(:,1), spotMaskSize);
+            FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, spot.validatedRadius, spot.validatedCenter(:,2,timeStep), spot.validatedCenter(:,1,timeStep), spotMaskSize);
             
             %Create the annulus mask
-            FOVAnnulusMask{i}(:,:,timeStep) = annulusMask(data.image, rad, center(:,2), center(:,1), annulusMin, annulusMax);
+            FOVAnnulusMask{i}(:,:,timeStep) = annulusMask(data.image, spot.validatedRadius, spot.validatedCenter(:,2,timeStep), spot.validatedCenter(:,1,timeStep), annulusMin, annulusMax);
             
             %Create corners mask
             FOVCornerMask{i}(:,:,timeStep) = CornerMask(data.image,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
@@ -165,14 +163,14 @@ for i = 1:numberOfFiles
             spotad=imadjust(FOVSpotMask{i}(:,:,timeStep));
             level=graythresh(spotad);
             binary=im2bw(spotad,level);
-            [center] = MaskMeasure(binary);
+            [spot.center(:,:,timeStep)] = MaskMeasure(binary);
             
-            %Define shifted grid
-            [center,rad,row,col,gridx,gridy]=GridSpot2(center,rad,FOVSpotMask{i}(:,:,timeStep),row,col,imageSegments{i}(:,:,timeStep));
+            %Define shifted grid (it does not change the validated radius)
+            [spot.validatedCenter(:,:,timeStep),spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.center(:,:,timeStep),spot.validatedRadius,FOVSpotMask{i}(:,:,timeStep),row,col,imageSegments{i}(:,:,timeStep));
             
             %Define masks based on new centers
-            FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, rad, center(:,2), center(:,1), spotMaskSize);
-            FOVAnnulusMask{i}(:,:,timeStep) = annulusMask(data.image, rad, center(:,2), center(:,1), annulusMin, annulusMax);
+            FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, spot.validatedRadius, spot.validatedCenter(:,2, timeStep), spot.validatedCenter(:,1, timeStep), spotMaskSize);
+            FOVAnnulusMask{i}(:,:,timeStep) = annulusMask(data.image, spot.validatedRadius, spot.validatedCenter(:,2,timeStep), spot.validatedCenter(:,1, timeStep), annulusMin, annulusMax);
             FOVCornerMask{i}(:,:,timeStep) = CornerMask(data.image,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
         end
 
