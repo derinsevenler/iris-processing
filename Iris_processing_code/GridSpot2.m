@@ -221,7 +221,7 @@ ind.y=zeros(row,col);
 if numel(varargin) == 1 %if it is initial spot discovery be stringent
 tol=1; %%tol give the radius starting from the center of the spot within the detected spots is not discarded
 elseif numel(varargin) == 3 %if it is spot confirmation, just take all the spots that were there to begin with.
-    tol = 0.4;
+    tol = 2;
 end
 range=round(mean(ra)*tol);
 incrementReal = 1;
@@ -233,15 +233,16 @@ incrementReal = 1;
             if ~isnan(x)||isnan(y);
                 tempSpots = [x,y;cent];
                 D = pdist(tempSpots);
-                [minDist, indSpot]  = min(D(1:length(cent)));
+                [minDist, indSpot]  = min(D(1:size(cent,1)));
                 if minDist <= range 
                     realCenter(incrementReal,:)= cent(indSpot,:);
                     realRadius(incrementReal,:) = ra(indSpot,:);
+                    cent(indSpot,:) = [];
                     incrementReal = incrementReal +1;
                     
                     
                 end
-
+    
             end
         end
     end
@@ -258,6 +259,8 @@ hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 
 plot(realCenter(:,1),realCenter(:,2),'g+'); %%realCenter contains just the dectected circles that have a correspondance in the  grid
+
+plot(cent(:,1), cent(:,2), 'r+'); %cent contains the rejected spots
 hold off
 
 %legend('Grid','Detected','True');

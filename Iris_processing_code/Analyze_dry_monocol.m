@@ -116,8 +116,8 @@ for i = 1:numberOfFiles
         annulusMax = str2num(maskInfo{3});
         cornerSize = str2num(maskInfo{4});
         numberOfBlocks = str2num(maskInfo{5});
-        columnsBlock = str2num(maskInfo{6});
-        rowsBlock = str2num(maskInfo{7});
+        columnsBlock = str2num(maskInfo{7});
+        rowsBlock = str2num(maskInfo{6});
         
     end
     
@@ -136,10 +136,10 @@ for i = 1:numberOfFiles
             %Find spots
             spotad=imadjust(spotBlock);
             binary = localthresh(spotad);
-            [spot.center(:,:,timeStep),spot.radius,minimum,maximum]= CircleDet(binary);
+            [spot.tempCenter,spot.radius,minimum,maximum]= CircleDet(binary);
             
             %Validate spots
-            [spot.validatedCenter(:,:,timeStep),spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.center(:,:,timeStep),spot.radius,spotad,spotBlockRect);
+            [spot.validatedCenter(:,:,timeStep),spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.tempCenter,spot.radius,spotad,spotBlockRect);
             
             %Create spot mask
             FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, spot.validatedRadius, spot.validatedCenter(:,2,timeStep), spot.validatedCenter(:,1,timeStep), spotMaskSize);
@@ -149,6 +149,7 @@ for i = 1:numberOfFiles
             
             %Create corners mask
             FOVCornerMask{i}(:,:,timeStep) = CornerMask(data.image,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
+            figure(4)
             imshow(data.image+FOVCornerMask{1}(:,:,1))
             
         else
@@ -163,10 +164,13 @@ for i = 1:numberOfFiles
             spotad=imadjust(FOVSpotMask{i}(:,:,timeStep));
             level=graythresh(spotad);
             binary=im2bw(spotad,level);
-            [spot.center(:,:,timeStep)] = MaskMeasure(binary);
+            [spot.tempCenter] = MaskMeasure(binary);
             
             %Define shifted grid (it does not change the validated radius)
-            [spot.validatedCenter(:,:,timeStep),spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.center(:,:,timeStep),spot.validatedRadius,FOVSpotMask{i}(:,:,timeStep),row,col,imageSegments{i}(:,:,timeStep));
+            [bob,spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.tempCenter,spot.validatedRadius,FOVSpotMask{i}(:,:,timeStep),row,col,imageSegments{i}(:,:,timeStep));
+            %just doing the following line because matlab crashed
+            %otherwise...
+            spot.validatedCenter(:,:,timeStep) = bob;
             
             %Define masks based on new centers
             FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, spot.validatedRadius, spot.validatedCenter(:,2, timeStep), spot.validatedCenter(:,1, timeStep), spotMaskSize);

@@ -1,4 +1,4 @@
-function [ mask ] = CornerMask( image, gridx, gridy, cornerSize, rowsBlock, columnsBlock )
+function [ mask ] = CornerMask( image, gridx, gridy, cornerSize, columnsBlock, rowsBlock)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
