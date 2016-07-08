@@ -6,9 +6,9 @@
 [file, folder] = uigetfile('*.*', 'Select the TIFF image stack (multicolor)');
 tifFile= [folder filesep file];
 
-% Get the mirror image file info
-[file, folder] = uigetfile('*.*', 'Select the mirror file (TIFF image stack also)');
-mirFile= [folder filesep file];
+% % Get the mirror image file info
+% [file, folder] = uigetfile('*.*', 'Select the mirror file (TIFF image stack also)');
+% mirFile= [folder filesep file];
 
 % load the first image to get the self-reference region
 f = figure('Name', 'Please select a region of bare Si');
@@ -21,10 +21,10 @@ close(f);
 data = zeros(size(im,1), size(im,2), 4);
 for channel = 1:4
 	I = imread(tifFile, channel);
-	mir = imread(mirFile, channel);
-	In = double(I)./double(mir);
-	sRef = imcrop(In, selfRefRegion);
-	data(:,:,channel) = In./median(sRef(:));
+	% mir = imread(mirFile, channel);
+	% In = double(I)./double(mir);
+	sRef = imcrop(I, selfRefRegion);
+	data(:,:,channel) = I./median(sRef(:));
 end
 
 % load the lookup table
