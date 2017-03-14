@@ -85,6 +85,7 @@ for i = 1:numberOfFiles
         sRef = imcrop(Ial, selfRefRegion);
         Ialpost= Ial./median(sRef(:));
         alignedBlocks{i}(:,:,timeStep)=Ialpost;
+        imageSegments{i}(:,:,timeStep) = imageSegments{i}(:,:,timeStep)./median(sRef(:));
         progressbar(timeStep/data.timeSteps)
     end
     
