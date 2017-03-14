@@ -26,7 +26,7 @@ title('horizontal profile')
 axis tight
 
 %% Estimate spot spacing by autocorrelation
-ac = xcov(xProfile);                        %unbiased autocorrelation
+ac = xcov(smooth(xProfile));                        %unbiased autocorrelation
 f3 = figure('position',[-3 427 569 94]);
 plot(ac)
 s1 = diff(ac([1 1:end]));                   %left slopes
@@ -50,7 +50,7 @@ axis tight
 
 %% Find peaks
 if nargin == 1
-    minPeakWidth = 15;
+    minPeakWidth = 12;
     maxPeakWidth = 30;
 elseif nargin == 2
     minPeakWidth = max([median(radius) - 6*std(radius), 5]);
@@ -66,7 +66,7 @@ findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakPromine
 % repeat all the steps used above.
 
 yProfile = mean(spotad');                        %peak profile
-ac = xcov(yProfile);                        %cross correlation
+ac = xcov(smooth(yProfile));                        %cross correlation
 p1 = diff(ac([1 1:end]));
 p2 = diff(ac([1:end end]));
 maxima = find(p1>0 & p2<0);                 %peak locations
