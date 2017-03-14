@@ -1,4 +1,4 @@
-function [Ir]=features(I1,I2)
+function [Ir,tform]=features(I1,I2)
 %%% Find the corners.
 
    points1 = detectHarrisFeatures(I1);  %% reference image

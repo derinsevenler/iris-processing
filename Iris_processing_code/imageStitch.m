@@ -1,5 +1,8 @@
 function [ slide ] = imageStitch( alignedBlocks)
-%imageStitch concatenates slide images into one slide
+%imageStitch concatenates slide images into one slide, putting the first
+%image on the left and adding images sequentially on the right side in the
+%order see in the explorer window.  Padding is used on the top in case they are not
+%the same size
 
 
 

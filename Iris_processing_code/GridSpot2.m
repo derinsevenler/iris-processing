@@ -1,16 +1,26 @@
-function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotBlock,spotBlockRect)
+%GridSpot2 compares a grid to the detected spot features and only includes
+%spot features that are close to the grid.  detect "false positive" spots and construct the grid used for spots sorting
 
-%%  detect "false positive" spots and construct the grid used for spots sorting
-default = {'10 10'};
+function [center,rad,row,col,totx,toty]= GridSpot2(cent,ra,spotad,varargin)
+
+if numel(varargin) == 3
+    row = varargin{1};
+    col = varargin{2};
+    image = varargin{3};
+elseif numel(varargin) == 1
+spotBlockRect = varargin{1};
+
+%user input for rows and columns of block
+default = {'20 20'};
 numS=inputdlg('How many rows and columns of spots do you wish to analyze [nrow ncol]?', 'rows and columns', 1, default);
 numS=str2num(numS{1});
 row=(numS(1));
 col=(numS(2));
-
+end
 
 
 %% Create horizontal profile
-xProfile = mean(spotBlock);
+xProfile = mean(spotad);
 f2 = figure('position',[39 346 284 73]);
 plot(xProfile)
 title('horizontal profile')
@@ -36,16 +46,19 @@ axis tight
 
 seLine = strel('line',estPeriod,0);
 xProfile2 = imtophat(xProfile,seLine);
+xProfile3 = smooth(xProfile2, 3)';
 f4 = figure('position',[40 443 285 76]);
-plot(xProfile2)
+plot(xProfile3)
 title('enhanced horizontal profile')
 axis tight
 
 %% Find peaks
-minPeakWidth = median(ra) - 3*std(ra);
+minPeakWidth = max([median(ra) - 6*std(ra), 5]);
 maxPeakWidth = median(ra) + 3*std(ra);
-[pks,xCenters] = findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth);
-findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
+
+[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth);
+findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
+
 
 
 %% Transpose and repeat
@@ -53,7 +66,7 @@ findpeaks(xProfile2, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakPromine
 % for the horizontal spacing. To do this, we simply transpose the image and
 % repeat all the steps used above.
 
-yProfile = mean(spotBlock');                        %peak profile
+yProfile = mean(spotad');                        %peak profile
 ac = xcov(yProfile);                        %cross correlation
 p1 = diff(ac([1 1:end]));
 p2 = diff(ac([1:end end]));
@@ -61,18 +74,21 @@ maxima = find(p1>0 & p2<0);                 %peak locations
 estPeriod = round(median(diff(maxima)));     %spacing estimate
 seLine = strel('line',estPeriod,0);
 yProfile2 = imtophat(yProfile,seLine);      %background removed
-
-[pks,yCenters] = findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth); 
-findpeaks(yProfile2, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.001);%, 'MaxPeakWidth', maxPeakWidth)
+yProfile3 = smooth(yProfile2, 3)';
 
 
+[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth); 
+findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
 
 
+
+wxyz = 0;
+while wxyz ~= 5
 %% creating the center matrix
-totx = repmat(xCenters,row,1);
-toty = repmat(yCenters',1,col);
+totx = repmat(xCenters,length(yCenters),1);
+toty = repmat(yCenters',1,length(xCenters));
 
-%% Pad totx and toty to match the size of the col and row,to avoid plotting errors and show and failed spot detection.
+%% Pad totx and toty to match the size of the col and row,to avoid plotting errors and show failed spot detection.
 if size(totx,1)<row
     totx = padarray(totx,[row-size(totx,1), 0], NaN, 'post');
 end
@@ -88,22 +104,48 @@ end
 
 
 %% Show centers of calculated spots and get user input on if it is good enough
-xy = figure('Position', [200 200 500 500], 'Name', 'Are the calculated spot centers lining up with the spots?');
+xy = figure('Position', [200 200 600 600], 'Name', 'Are the calculated spot centers lining up with the spots?');
 
 % Create ok push button
 okbtn = uicontrol('Style', 'pushbutton', 'String', 'ok',...
     'Position', [20 20 50 20],...
     'Callback', @continueCB);
-% Create ok push button
-nobtn = uicontrol('Style', 'pushbutton', 'String', 'no',...
-    'Position', [420 20 50 20],...
-    'Callback', @startOver);
-imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
+% Create add column push button
+columnbtn = uicontrol('Style', 'pushbutton', 'String', 'add column',...
+    'Position', [390 20 100 20],...
+    'Callback', @newColumn);
+% Create add row push button
+rowbtn = uicontrol('Style', 'pushbutton', 'String', 'add row',...
+    'Position', [320 20 50 20],...
+    'Callback', @newRow);
+% Create delete row push button
+delrowbtn = uicontrol('Style', 'pushbutton', 'String', 'delete row',...
+    'Position', [230 20 80 20],...
+    'Callback', @deleteRow);
+% Create delete column push button
+delcolumnbtn = uicontrol('Style', 'pushbutton', 'String', 'delete column',...
+    'Position', [120 20 100 20],...
+    'Callback', @deleteColumn);
+imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 hold off
 
 waitfor(xy)
+
+if wxyz == 1
+    xCenters = sort([xCenters, xcolumn]);
+elseif wxyz == 2
+    yCenters = sort([yCenters, yrow]);
+elseif wxyz == 3
+    [~, I] = min(abs(yCenters - yrow), [] ,'omitnan');
+    yCenters(I) = [];
+elseif wxyz == 4
+     [~, I] = min(abs(xCenters - xcolumn), [] ,'omitnan');
+    xCenters(I) = [];
+end
+end
+
 close(f2)
 close(f3)
 close(f4)
@@ -112,63 +154,63 @@ close(f4)
 
 %% Perform manual gridding only if automatic gridding failed
 
-if xyz == 1
-    clear totx toty
-    %% save in posDry the coordinates of the first row of spots
-    
-    
-    for z=1:(col+1)
-        if z==col+1
-            p=figure('Name','Select the center of the first spot of the second row you want to analyze');
-        else
-            p=figure('Name', 'Select the center of each spot of the first row you want to analyze');
-        end
-        imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
-        g=impoint(gca);
-        pause(0.5);
-        posDry(z,:)=getPosition(g);
-        delete(p);
-        close(gcf);
-    end
-    %
-    %% distance between spots
-    p1=posDry(1,:);
-    p2=posDry(col+1,:);
-    distx=p2(1)-p1(1);
-    disty=p2(2)-p1(2);
-    %
-    % %% create the grid
-    
-    if distx==0
-        addx=zeros(1,row);
-    else
-        if row>1
-            addx=[0:distx:distx*(row-1)];
-        else
-            addx=0;
-        end
-    end
-    
-    if disty==0
-        addy=zeros(1,row);
-    else
-        if row>1
-            addy=[0:disty:disty*(row-1)];
-        else
-            addy=0;
-        end
-    end
-    
-    for j=1:col
-        %% coordinates of the spots on the other rows
-        totx(j,1:length(addx))=posDry(j,1)+addx;
-        toty(j,1:length(addy))=posDry(j,2)+addy;
-    end
-    
-    totx=totx';
-    toty=toty';
-    
-end
+% if xyz == 1
+%     clear totx toty
+%     %% save in posDry the coordinates of the first row of spots
+%     
+%     
+%     for z=1:(col+1)
+%         if z==col+1
+%             p=figure('Name','Select the center of the first spot of the second row you want to analyze');
+%         else
+%             p=figure('Name', 'Select the center of each spot of the first row you want to analyze');
+%         end
+%         imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
+%         g=impoint(gca);
+%         pause(0.5);
+%         posDry(z,:)=getPosition(g);
+%         delete(p);
+%         close(gcf);
+%     end
+%     %
+%     %% distance between spots
+%     p1=posDry(1,:);
+%     p2=posDry(col+1,:);
+%     distx=p2(1)-p1(1);
+%     disty=p2(2)-p1(2);
+%     %
+%     % %% create the grid
+%     
+%     if distx==0
+%         addx=zeros(1,row);
+%     else
+%         if row>1
+%             addx=[0:distx:distx*(row-1)];
+%         else
+%             addx=0;
+%         end
+%     end
+%     
+%     if disty==0
+%         addy=zeros(1,row);
+%     else
+%         if row>1
+%             addy=[0:disty:disty*(row-1)];
+%         else
+%             addy=0;
+%         end
+%     end
+%     
+%     for j=1:col
+%         %% coordinates of the spots on the other rows
+%         totx(j,1:length(addx))=posDry(j,1)+addx;
+%         toty(j,1:length(addy))=posDry(j,2)+addy;
+%     end
+%     
+%     totx=totx';
+%     toty=toty';
+%     
+% end
 
 
 
@@ -180,67 +222,96 @@ end
 ind.x=zeros(row,col);
 ind.y=zeros(row,col);
 
-tol=2; %%tol give the radius starting from the center of the spot within the detected spots is not discarded
+if numel(varargin) == 1 %if it is initial spot discovery be stringent
+tol=1; %%tol give the radius starting from the center of the spot within the detected spots is not discarded
+elseif numel(varargin) == 3 %if it is spot confirmation, just take all the spots that were there to begin with.
+    tol = 2;
+end
 range=round(mean(ra)*tol);
+incrementReal = 1;
 
-for z=1:length(cent(:,1));
-    xC=cent(z,1);
-    yC=cent(z,2);
     for r=1:row
         for c=1:col
             x=totx(r,c);
             y=toty(r,c);
-            if (xC<x+range&&xC>x-range&&yC<y+range&&yC>y-range)==1
-                fl(r,c,z)=1;
-            else
-                fl(r,c,z)=0;
+            if ~isnan(x)||isnan(y);
+                tempSpots = [x,y;cent];
+                D = pdist(tempSpots);
+                [minDist, indSpot]  = min(D(1:size(cent,1)));
+                if minDist <= range 
+                    realCenter(incrementReal,:)= cent(indSpot,:);
+                    realRadius(incrementReal,:) = ra(indSpot,:);
+                    cent(indSpot,:) = [];
+                    incrementReal = incrementReal +1;
+                    
+                    
+                end
+    
             end
         end
     end
-    if (find(fl(:,:,z)==1))~=0
-        log(z)=1;
-    else
-        log(z)=0;
-    end
-end
-
-idxF=find(log==0);
-cent(idxF,:)=[];
-ra(idxF,:)=[];
-
-
 
 
 %% show the grid and the detected spots
 figure(3);
-imshow(spotBlock,median(double(spotBlock(:)))*[0.8 1.2]);
+if numel(varargin) == 3
+    imshow(spotad+image);
+else
+imshow(spotad,median(double(spotad(:)))*[0.8 1.2]);
+end
 hold on
 plot(totx,toty,'bo');  %% totx toty are the coordinates of the points of the calculated grid
 
-plot(cent(:,1),cent(:,2),'go'); %%cent contains just the dectected circles that have a correspondance in the  grid
+plot(realCenter(:,1),realCenter(:,2),'g+'); %%realCenter contains just the dectected circles that have a correspondance in the  grid
+
+plot(cent(:,1), cent(:,2), 'r+'); %cent contains the rejected spots
 hold off
 
 %legend('Grid','Detected','True');
+
+
 %% giving the full FOV coordinates instead of the local coordinates.
-cent(:,1)=cent(:,1)+spotBlockRect(1);
-cent(:,2)=cent(:,2)+spotBlockRect(2);
-center=cent;
-rad=ra;
-totx=totx+spotBlockRect(1);
-toty=toty+spotBlockRect(2);
+if numel(varargin) == 3
+    center = realCenter;
+    %stick to the original order of radii if it is called using extra
+    %varargin.
+    rad = ra;
+elseif numel(varargin) == 1
+    realCenter(:,1)=realCenter(:,1)+spotBlockRect(1);
+    realCenter(:,2)=realCenter(:,2)+spotBlockRect(2);
+    center=realCenter;
+    rad=realRadius;
+    totx=totx+spotBlockRect(1);
+    toty=toty+spotBlockRect(2);
+end
 
 
 %% Callback functions
 
     function continueCB(hObject, callbackdata)
-        xyz=0;
+        wxyz = 5;
         close(xy)
     end
-    function startOver(hObject, callbackdata)
-        xyz=1;
+    function newColumn(hObject, callbackdata)
+        wxyz=1;
+        [xcolumn,~] = ginput(1);
         close(xy)
     end
-
+ function newRow(hObject, callbackdata)
+        wxyz=2;
+        [~,yrow] = ginput(1);
+        close(xy)
+    end
+ function deleteRow(hObject, callbackdata)
+        wxyz=3;
+        [~,yrow] = ginput(1);
+        close(xy)
+ end
+function deleteColumn(hObject, callbackdata)
+        wxyz=4;
+        [xcolumn,~] = ginput(1);
+        close(xy)
+    end
 end
 
 
