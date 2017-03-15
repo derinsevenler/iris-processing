@@ -114,13 +114,9 @@ for timeStep = 2:length(imds.Files)
     Ial = AlignmentcheckerWet(data.initial, data.aligned);
     %normalize by ref region
     sRef = imcrop(Ial, selfRefRegion);
-    Ialpost= Ial./median(sRef(:));
     data.current = data.current./median(sRef(:));
     
-    %%% filt=boxcarAv(align(:,:,:,color)); %% to be used for bigger
-    %%% stacks.
-    
-    %define inverse tranformation
+    %define inverse transformation
     invtform = invert(tform);
     
     %Apply tranformation to mask
@@ -145,11 +141,12 @@ for timeStep = 2:length(imds.Files)
     FOVCornerMask.current = CornerMask(data.current,gridx,gridy,cornerSize, columnsBlock, rowsBlock);
     
     %   Calculate the median value of each region
-    [~, spotMed(:,:,timeStep)] = MaskMeasure(data.current, FOVSpotMask.current, gridx, gridy);
-    [~, annulusMed(:,:,timeStep)] = MaskMeasure(data.current, FOVAnnulusMask.current, gridx, gridy);
+    [~, spotMed(:,:,timeStep), spotMean(:,:,timeStep)] = MaskMeasure(data.current, FOVSpotMask.current, gridx, gridy);
+    [~, annulusMed(:,:,timeStep),annulusMean(:,:,timeStep)] = MaskMeasure(data.current, FOVAnnulusMask.current, gridx, gridy);
     [~, cornerMed(:,:,timeStep)] = CornerMaskMeasure(data.current, FOVCornerMask.current, gridx, gridy);
     
     DiffMed(:,:,timeStep) = spotMed(:,:,timeStep) - annulusMed(:,:,timeStep);
+    DiffMean(:,:,timeStep) = spotMean(:,:,timeStep) - annulusMean(:,:,timeStep);
     
     % Apply the LUT
     spotLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMed(:,:,timeStep), 'nearest', 0);
@@ -164,63 +161,51 @@ end
 
 
 
-%
-%
-%
-%     %%
-%
-%     %%
-%     %     %rotate such that the left side is the top like in the printer
-%     %     spotMed{1} = rot90(spotMed{1}, 3);
-%     %     annulusMed{1} = rot90(annulusMed{1}, 3);
-%     %     DiffMed{1} = rot90(DiffMed{1}, 3);
-%     %     spotLUT{1} = rot90(spotLUT{1}, 3);
-%     %     annulusLUT{1} = rot90(annulusLUT{1}, 3);
-%     %     cornerLUT{1} = rot90(cornerLUT{1}, 3);
-%     %     annulusDiffLUT{1} = rot90(annulusDiffLUT{1}, 3);
-%     %     cornerDiffLUT{1} = rot90(cornerDiffLUT{1}, 3);
-%     %%
-%     %break data into arrays based on incubation blocks
-%     spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
-%     annulusRaw = reformatData(annulusMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
-%     diffRaw = reformatData(DiffMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
-%     spotsHeight = reformatData(spotLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-%     annulusHeight= reformatData(annulusLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-%     cornerHeight= reformatData(cornerLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-%     annulusdiffHeight = reformatData(annulusDiffLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-%     cornerdiffHeight = reformatData(cornerDiffLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-%
-%     %reformat for final output with all the data
-%     for syzygy = 1:numberOfBlocks
-%         results.raw.spots{foo + syzygy-1} = spotsRaw{syzygy};
-%         results.raw.annulus{foo + syzygy-1} = annulusRaw{syzygy};
-%         results.raw.diff {foo + syzygy-1} = diffRaw{syzygy};
-%         results.height.spots{foo + syzygy-1} = spotsHeight{syzygy};
-%         results.height.annulus{foo + syzygy-1} = annulusHeight{syzygy};
-%         results.height.corner{foo + syzygy-1} = cornerHeight{syzygy};
-%         results.height.annulusdiff{foo + syzygy-1} = annulusdiffHeight{syzygy};
-%         results.height.cornerdiff{foo + syzygy-1} = cornerdiffHeight{syzygy};
-%     end
-%
-%     %increment block tracker
-%     foo = foo+numberOfBlocks;
-%
-%     %add images masks, and LUT to results file
-%     %results.images{i} = imageSegments{i};
-%     %results.spotMasks{i} = FOVSpotMask{i};
-%     %results.annulusMasks{i} = FOVAnnulusMask{i};
-%     results.LUT = LUT;
-%     results.spotBlockRect = spotBlockRect;
-%     results.cropFOVCord = cropFOVCord;
-%     results.selfRefRegion = selfRefRegion;
-%     results.dataPath = data.Path;
-%     results.mirpath = mirror.path;
-%
-% end
-%
-%
-% saveName='results.mat';
-% [filename, pathname] = uiputfile(saveName, 'Save results as');
-% save([pathname filesep filename], 'results');
-%
-%
+
+
+
+    %%
+    %break data into arrays based on incubation blocks
+    spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    annulusRaw = reformatData(annulusMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    diffRaw = reformatData(DiffMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    spotsHeight = reformatData(spotLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    annulusHeight= reformatData(annulusLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    cornerHeight= reformatData(cornerLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    annulusdiffHeight = reformatData(annulusDiffLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+    cornerdiffHeight = reformatData(cornerDiffLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
+
+    %reformat for final output with all the data
+    for syzygy = 1:numberOfBlocks
+        results.raw.spots{foo + syzygy-1} = spotsRaw{syzygy};
+        results.raw.annulus{foo + syzygy-1} = annulusRaw{syzygy};
+        results.raw.diff {foo + syzygy-1} = diffRaw{syzygy};
+        results.height.spots{foo + syzygy-1} = spotsHeight{syzygy};
+        results.height.annulus{foo + syzygy-1} = annulusHeight{syzygy};
+        results.height.corner{foo + syzygy-1} = cornerHeight{syzygy};
+        results.height.annulusdiff{foo + syzygy-1} = annulusdiffHeight{syzygy};
+        results.height.cornerdiff{foo + syzygy-1} = cornerdiffHeight{syzygy};
+    end
+
+    %increment block tracker
+    foo = foo+numberOfBlocks;
+
+    %add images masks, and LUT to results file
+    %results.images{i} = imageSegments{i};
+    %results.spotMasks{i} = FOVSpotMask{i};
+    %results.annulusMasks{i} = FOVAnnulusMask{i};
+    results.LUT = LUT;
+    results.spotBlockRect = spotBlockRect;
+    results.cropFOVCord = cropFOVCord;
+    results.selfRefRegion = selfRefRegion;
+    results.dataPath = data.Path;
+    results.mirpath = mirror.path;
+
+end
+
+
+saveName='results.mat';
+[filename, pathname] = uiputfile(saveName, 'Save results as');
+save([pathname filesep filename], 'results');
+
+

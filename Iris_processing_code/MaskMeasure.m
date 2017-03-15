@@ -18,10 +18,20 @@ labeledMask = bwlabel(mask);
 if nargin == 4
     stats = regionprops(labeledMask,image, 'PixelValues', 'Centroid');
     
+    %Preallocate for speed
+    centroid = zeros(length(stats),2);
+    medPixVal = zeros(length(stats),1);
+    meanPixVal = zeros(length(stats),1);
+    
     %extract centroid and pixelvalue data
     for i = 1:length(stats)
         centroid(i,:) = stats(i).Centroid;
-        medPixVal(i,:) = median(stats(i).PixelValues);
+        PixVal = stats(i).PixelValues;
+        
+        medPixVal(i,:) = median(PixVal);
+        modePixVal = mode(PixVal);
+        stdPixVal = std(PixVal);
+        meanPixVal(i,:) = mean(PixVal(PixVal >= modePixVal - stdPixVal & PixVal <= modePixVal + stdPixVal));
     end
     
 elseif nargin == 1
@@ -38,9 +48,13 @@ end
 
 %% Sort spot values into its original array based on the xy position of the centroid
 if nargin == 4
-    spotData = [centroid medPixVal];
+    spotData = [centroid medPixVal meanPixVal];
     
     tol = 20;
+    
+    %Preallocate for speed
+    spotMed = zeros(size(gridx,1), size(gridx,2));
+    spotMean = zeros(size(gridx,1), size(gridx,2));
     
     for i = 1 : size(gridx,1)
         for j = 1:size(gridx,2)
@@ -50,8 +64,10 @@ if nargin == 4
             
             if isempty(match)
                 spotMed(i,j) = NaN;
+                spotMean(i,j) = NaN;
             else
                 spotMed(i,j) = spotData(match, 3);
+                spotMean(i,j) =spotData(match,4);
             end
             
             
@@ -59,6 +75,7 @@ if nargin == 4
     end
     
     varargout{1} = spotMed;
+    varargout{2} = spotMean;
     
 end
 
