@@ -71,7 +71,7 @@ while z == 1
     i = figure('Position', [800 10 700 500], 'Name', ['Histogram of the difference squared with error per pixel = ' num2str(errorpPixel)]);
     histogram(error);
     
-    h = figure('Position', [10 10 700 900], 'Name', 'Are the images aligned well enough?');
+    h = figure('Position', [30 30 700 900], 'Name', 'Are the images aligned well enough?');
     
     
     

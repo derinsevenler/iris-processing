@@ -7,12 +7,11 @@
 function [Ial] = AlignmentcheckerWet(im1, im)
 
 
-z = 0;
 Ial = im;
 
 yZeroCoordinates = find(not(mean(im)));
 xZeroCoordinates = find(not(im(:,1)));
-if isempty(yZeroCoordinates) == 0 
+if isempty(yZeroCoordinates) == 0
     if yZeroCoordinates(1) <= 100
         ycoord = yZeroCoordinates(end);
         xy = 0;
@@ -34,8 +33,37 @@ end
 errorpPixel = sum(error(:))/numel(im1);
 
 if errorpPixel >= 0.001
-     h = warndlg('Alignment of images is poor. This image will be skipped');
+    h = figure('Position', [50 50 700 900], 'Name', 'Are the images aligned well enough?');
+
+    % Create ok push button
+    okbtn = uicontrol('Style', 'pushbutton', 'String', 'ok',...
+        'Position', [20 20 50 20],...
+        'Callback', @continueCB);
+    % Create ok push button
+    nobtn = uicontrol('Style', 'pushbutton', 'String', 'no',...
+        'Position', [620 20 50 20],...
+        'Callback', @startOver);
+    
+    hold on
+    if xy == 0
+        imshow((double(im1(:, ycoord:end))+double(Ial(:, ycoord:end)))/2);
+    elseif xy == 1
+        imshow((double(im1(:, 1:ycoord))+double(Ial(:, 1:ycoord)))/2);
+    end
+    hold off
+    
     waitfor(h)
-    Ial = NaN(size(Ial));
+    
+end
+
+%Button call backs
+    function continueCB(~, ~)
+        Ial = Ial;
+        close(h)
+    end
+    function startOver(~, ~)
+        Ial = NaN(size(Ial));
+        close(h)
+    end
 
 end
