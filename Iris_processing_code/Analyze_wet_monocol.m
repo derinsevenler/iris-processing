@@ -1,4 +1,4 @@
-%%% This code works on a stack of n monocolor dry images.
+%%% This code works on a folder of individual Tifs, such as those captured during a real-time experiment.
 %% =============================================================================================
 clc
 clearvars
@@ -14,8 +14,12 @@ LUT=lutF.results.LUT;
 [mirror.file, mirror.folder] = uigetfile('*.*', 'Select the mirror file');
 mirror.path= [mirror.folder filesep mirror.file];
 
-% Get the tiff Image or images if you want to do a full slide
+% Get the folder containing all the single images
 data.folder = uigetdir('','Select the folder with the images you wish to analyze');
+
+%Select where to save the results.
+saveName='results.mat';
+[filename, pathname] = uiputfile(saveName, 'Save results as');
 
 imds = datastore(data.folder,'Type','image', 'FileExtensions','.tif');
 %%
@@ -84,21 +88,23 @@ figure(4)
 imshow(data.initial+FOVCornerMask.initial)
 
 %   Calculate the median value of each region
-[~, spotMed(:,:,1)] = MaskMeasure(data.initial, FOVSpotMask.initial, gridx, gridy);
-[~, annulusMed(:,:,1)] = MaskMeasure(data.initial, FOVAnnulusMask.initial, gridx, gridy);
+[~, spotMed(:,:,1), spotMean(:,:,1)] = MaskMeasure(data.initial, FOVSpotMask.initial, gridx, gridy);
+[~, annulusMed(:,:,1), annulusMean(:,:,1)] = MaskMeasure(data.initial, FOVAnnulusMask.initial, gridx, gridy);
 [~, cornerMed(:,:,1)] = CornerMaskMeasure(data.initial, FOVCornerMask.initial, gridx, gridy);
 
 DiffMed(:,:,1) = spotMed(:,:,1) - annulusMed(:,:,1);
+DiffMean(:,:,1) = spotMean(:,:,1) - annulusMean(:,:,1);
 
 % Apply the LUT
-spotLUT(:,:,1) = interp1(LUT(:,2), LUT(:,1), spotMed(:,:,1), 'nearest', 0);
-annulusLUT(:,:,1) = interp1(LUT(:,2), LUT(:,1), annulusMed(:,:,1), 'nearest', 0);
+spotMedLUT(:,:,1) = interp1(LUT(:,2), LUT(:,1), spotMed(:,:,1), 'nearest', 0);
+spotMeanLUT(:,:,1) = interp1(LUT(:,2), LUT(:,1), spotMean(:,:,1), 'nearest', 0);
+annulusMedLUT(:,:,1) = interp1(LUT(:,2), LUT(:,1), annulusMed(:,:,1), 'nearest', 0);
+annulusMeanLUT(:,:,1) = interp1(LUT(:,2), LUT(:,1), annulusMean(:,:,1), 'nearest', 0);
 cornerLUT(:,:,1) = interp1(LUT(:,2), LUT(:,1), cornerMed(:,:,1), 'nearest', 0);
-annulusDiffLUT(:,:,1) = spotLUT(:,:,1) - annulusLUT(:,:,1);
-cornerDiffLUT(:,:,1) = spotLUT(:,:,1) - cornerLUT(:,:,1);
+annulusDiffLUT(:,:,1) = spotMedLUT(:,:,1) - annulusMedLUT(:,:,1);
+cornerMedDiffLUT(:,:,1) = spotMedLUT(:,:,1) - cornerLUT(:,:,1);
+cornerMeanDiffLUT(:,:,1) = spotMeanLUT(:,:,1) - cornerLUT(:,:,1);
 
-%tracker for # of blocks
-foo = 1;
 
 %% open, crop the ROI, and align all images %%%
 for timeStep = 2:length(imds.Files)
@@ -149,63 +155,60 @@ for timeStep = 2:length(imds.Files)
     DiffMean(:,:,timeStep) = spotMean(:,:,timeStep) - annulusMean(:,:,timeStep);
     
     % Apply the LUT
-    spotLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMed(:,:,timeStep), 'nearest', 0);
-    annulusLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), annulusMed(:,:,timeStep), 'nearest', 0);
+    spotMedLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMed(:,:,timeStep), 'nearest', 0);
+    spotMeanLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMean(:,:,timeStep), 'nearest', 0);
+    annulusMedLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), annulusMed(:,:,timeStep), 'nearest', 0);
+    annulusMeanLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), annulusMean(:,:,timeStep), 'nearest', 0);
     cornerLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), cornerMed(:,:,timeStep), 'nearest', 0);
-    annulusDiffLUT(:,:,timeStep) = spotLUT(:,:,timeStep) - annulusLUT(:,:,timeStep);
-    cornerDiffLUT(:,:,timeStep) = spotLUT(:,:,timeStep) - cornerLUT(:,:,timeStep);
+    annulusDiffLUT(:,:,timeStep) = spotMedLUT(:,:,timeStep) - annulusMedLUT(:,:,timeStep);
+    cornerMedDiffLUT(:,:,timeStep) = spotMedLUT(:,:,timeStep) - cornerLUT(:,:,timeStep);
+    cornerMeanDiffLUT(:,:,timeStep) = spotMeanLUT(:,:,timeStep) - cornerLUT(:,:,timeStep);
     
     progressbar(timeStep/length(imds.Files))
 end
 
+%break data into arrays based on incubation blocks
+spotsRawMed = reformatData(spotMed, numberOfBlocks, rowsBlock, columnsBlock);
+annulusRawMed = reformatData(annulusMed, numberOfBlocks, rowsBlock, columnsBlock);
+diffRawMed = reformatData(DiffMed, numberOfBlocks, rowsBlock, columnsBlock);
+diffRawMean = reformatData(DiffMean, numberOfBlocks, rowsBlock, columnsBlock);
+spotsMedHeight = reformatData(spotMedLUT, numberOfBlocks, rowsBlock, columnsBlock);
+spotsMeanHeight = reformatData(spotMeanLUT, numberOfBlocks, rowsBlock, columnsBlock);
+annulusMedHeight= reformatData(annulusMedLUT, numberOfBlocks, rowsBlock, columnsBlock);
+annulusMeanHeight= reformatData(annulusMeanLUT, numberOfBlocks, rowsBlock, columnsBlock);
+cornerHeight= reformatData(cornerLUT, numberOfBlocks, rowsBlock, columnsBlock);
+annulusdiffHeight = reformatData(annulusDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
+cornerMeddiffHeight = reformatData(cornerMedDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
+cornerMeandiffHeight = reformatData(cornerMeanDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
+
+
+
+%Form into a timeline: 
+
+%reformat for final output with all the data
+results.raw.spotsMed = spotsRawMed;
+results.raw.annulusMed = annulusRawMed;
+results.raw.diffMed = diffRawMed;
+results.raw.diffMean = diffRawMean;
+results.height.spotsMed = spotsMedHeight;
+results.height.spotsMean = spotsMeanHeight;
+results.height.annulus = annulusMedHeight;
+results.height.corner = cornerHeight;
+results.height.annulusdiff = annulusdiffHeight;
+results.height.cornerMeddiff = cornerMeddiffHeight;
+results.height.cornerMeandiff = cornerMeandiffHeight;
+
+%add images masks, and LUT to results file
+results.LUT = LUT;
+results.spotBlockRect = spotBlockRect;
+results.cropFOVCord = cropFOVCord;
+results.selfRefRegion = selfRefRegion;
+results.datafolder = data.folder;
+results.mirpath = mirror.path;
 
 
 
 
-
-
-    %%
-    %break data into arrays based on incubation blocks
-    spotsRaw = reformatData(spotMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
-    annulusRaw = reformatData(annulusMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
-    diffRaw = reformatData(DiffMed{i}, numberOfBlocks, rowsBlock, columnsBlock);
-    spotsHeight = reformatData(spotLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-    annulusHeight= reformatData(annulusLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-    cornerHeight= reformatData(cornerLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-    annulusdiffHeight = reformatData(annulusDiffLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-    cornerdiffHeight = reformatData(cornerDiffLUT{i}, numberOfBlocks, rowsBlock, columnsBlock);
-
-    %reformat for final output with all the data
-    for syzygy = 1:numberOfBlocks
-        results.raw.spots{foo + syzygy-1} = spotsRaw{syzygy};
-        results.raw.annulus{foo + syzygy-1} = annulusRaw{syzygy};
-        results.raw.diff {foo + syzygy-1} = diffRaw{syzygy};
-        results.height.spots{foo + syzygy-1} = spotsHeight{syzygy};
-        results.height.annulus{foo + syzygy-1} = annulusHeight{syzygy};
-        results.height.corner{foo + syzygy-1} = cornerHeight{syzygy};
-        results.height.annulusdiff{foo + syzygy-1} = annulusdiffHeight{syzygy};
-        results.height.cornerdiff{foo + syzygy-1} = cornerdiffHeight{syzygy};
-    end
-
-    %increment block tracker
-    foo = foo+numberOfBlocks;
-
-    %add images masks, and LUT to results file
-    %results.images{i} = imageSegments{i};
-    %results.spotMasks{i} = FOVSpotMask{i};
-    %results.annulusMasks{i} = FOVAnnulusMask{i};
-    results.LUT = LUT;
-    results.spotBlockRect = spotBlockRect;
-    results.cropFOVCord = cropFOVCord;
-    results.selfRefRegion = selfRefRegion;
-    results.dataPath = data.Path;
-    results.mirpath = mirror.path;
-
-end
-
-
-saveName='results.mat';
-[filename, pathname] = uiputfile(saveName, 'Save results as');
 save([pathname filesep filename], 'results');
 
 

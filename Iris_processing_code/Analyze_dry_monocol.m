@@ -180,8 +180,8 @@ for i = 1:numberOfFiles
         end
 
         %   Calculate the median value of each region
-        [~, spotMed{i}(:,:,timeStep)] = MaskMeasure(imageSegments{i}(:,:,timeStep), FOVSpotMask{i}(:,:,timeStep), gridx, gridy);
-        [~, annulusMed{i}(:,:,timeStep)] = MaskMeasure(imageSegments{i}(:,:,timeStep), FOVAnnulusMask{i}(:,:,timeStep), gridx, gridy);
+        [~, spotMed{i}(:,:,timeStep),~] = MaskMeasure(imageSegments{i}(:,:,timeStep), FOVSpotMask{i}(:,:,timeStep), gridx, gridy);
+        [~, annulusMed{i}(:,:,timeStep),~] = MaskMeasure(imageSegments{i}(:,:,timeStep), FOVAnnulusMask{i}(:,:,timeStep), gridx, gridy);
         [~, cornerMed{i}(:,:,timeStep)] = CornerMaskMeasure(imageSegments{i}(:,:,timeStep), FOVCornerMask{i}(:,:,timeStep), gridx, gridy);
         
         DiffMed{i}(:,:,timeStep) = spotMed{i}(:,:,timeStep) - annulusMed{i}(:,:,timeStep);
