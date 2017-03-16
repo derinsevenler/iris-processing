@@ -32,8 +32,8 @@ end
 
 errorpPixel = sum(error(:))/numel(im1);
 
-if errorpPixel >= 0.001
-    h = figure('Position', [50 50 700 900], 'Name', 'Are the images aligned well enough?');
+if errorpPixel >= 0.1
+    h = figure('Position', [50 50 700 900], 'Name', ['Are the images aligned well enough? Error Per pixel is ' num2str(errorpPixel)]);
 
     % Create ok push button
     okbtn = uicontrol('Style', 'pushbutton', 'String', 'ok',...

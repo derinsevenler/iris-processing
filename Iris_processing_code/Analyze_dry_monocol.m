@@ -140,7 +140,7 @@ for i = 1:numberOfFiles
             [spot.tempCenter,spot.radius,minimum,maximum]= CircleDet(binary);
             
             %Validate spots
-            [spot.validatedCenter(:,:,timeStep),spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.tempCenter,spot.radius,spotad,spotBlockRect);
+            [spot.validatedCenter(:,:,timeStep),spot.validatedRadius,row,col,gridx,gridy]=GridSpot1(spot.tempCenter,spot.radius,spotad,spotBlockRect);
             
             %Create spot mask
             FOVSpotMask{i}(:,:,timeStep) = spotMask(data.image, spot.validatedRadius, spot.validatedCenter(:,2,timeStep), spot.validatedCenter(:,1,timeStep), spotMaskSize);
@@ -168,7 +168,7 @@ for i = 1:numberOfFiles
             [spot.tempCenter] = MaskMeasure(binary);
             
             %Define shifted grid (it does not change the validated radius)
-            [bob,spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.tempCenter,spot.validatedRadius,FOVSpotMask{i}(:,:,timeStep),row,col,imageSegments{i}(:,:,timeStep));
+            [bob,spot.validatedRadius,row,col,gridx,gridy]=GridSpot1(spot.tempCenter,spot.validatedRadius,FOVSpotMask{i}(:,:,timeStep),row,col,imageSegments{i}(:,:,timeStep));
             %just doing the following line because matlab crashed
             %otherwise...
             spot.validatedCenter(:,:,timeStep) = bob;

@@ -18,8 +18,8 @@ function [Ir,tform]=features(I1,I2)
    matchedPoints1 = valid_points1(indexPairs(:, 1), :); 
    matchedPoints2 = valid_points2(indexPairs(:, 2), :); 
    [tform,inlierPtsDistorted,inlierPtsOriginal] = estimateGeometricTransform(matchedPoints2,matchedPoints1,'affine');
-   figure; showMatchedFeatures(I1,I2,inlierPtsOriginal,inlierPtsDistorted);
-   title('Matched inlier points');
+%    figure; showMatchedFeatures(I1,I2,inlierPtsOriginal,inlierPtsDistorted);
+%    title('Matched inlier points');
 
 
 outputView = imref2d(size(I1));

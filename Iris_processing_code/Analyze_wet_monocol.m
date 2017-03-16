@@ -74,7 +74,7 @@ binary = localthresh(spotad);
 [spot.tempCenter,spot.radius,minimum,maximum]= CircleDet(binary);
 
 %Validate spots
-[spot.validatedCenter(:,:,1),spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.tempCenter,spot.radius,spotad,spotBlockRect);
+[spot.validatedCenter(:,:,1),spot.validatedRadius,row,col,gridx,gridy]=GridSpot1(spot.tempCenter,spot.radius,spotad,spotBlockRect);
 
 %Create spot mask
 FOVSpotMask.initial = spotMask(data.initial, spot.validatedRadius, spot.validatedCenter(:,2,1), spot.validatedCenter(:,1,1), spotMaskSize);
@@ -181,10 +181,33 @@ annulusdiffHeight = reformatData(annulusDiffLUT, numberOfBlocks, rowsBlock, colu
 cornerMeddiffHeight = reformatData(cornerMedDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
 cornerMeandiffHeight = reformatData(cornerMeanDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
 
-
+%%
 
 %Form into a timeline: 
+for i = 1:size(spotsRawMed,1)
+    for j = 1:size(spotsRawMed,2)
+    
+    tannulusRawMed{i,j} = reshape(annulusRawMed{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tdiffRawMed{i,j} = reshape(diffRawMed{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tdiffRawMean{i,j} = reshape(diffRawMean{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tspotsMedHeight{i,j} = reshape(spotsMedHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tspotsMeanHeight{i,j} = reshape(spotsMeanHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tannulusMedHeight{i,j} = reshape(annulusMedHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tannulusMeanHeight{i,j} = reshape(annulusMeanHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tcornerHeight{i,j} = reshape(cornerHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tannulusdiffHeight{i,j} = reshape(annulusdiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tcornerMeddiffHeight{i,j} = reshape(cornerMeddiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    tcornerMeandiffHeight{i,j} = reshape(cornerMeandiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+    end
+end
+%%
+windowSize = 5; 
+b = (1/windowSize)*ones(1,windowSize);
+a = 1;
 
+y = filter(b,a,tcornerMeandiffHeight{1,1});
+plot(y')
+  %%  
 %reformat for final output with all the data
 results.raw.spotsMed = spotsRawMed;
 results.raw.annulusMed = annulusRawMed;
