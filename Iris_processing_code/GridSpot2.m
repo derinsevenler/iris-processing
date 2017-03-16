@@ -42,7 +42,7 @@ xProfile3 = smooth(xProfile2, 3)';
 minPeakWidth = max([median(ra) - 6*std(ra), 5]);
 maxPeakWidth = median(ra) + 3*std(ra);
 
-[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth);
+[~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.002);%, 'MaxPeakWidth', maxPeakWidth);
 %findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
 
 
@@ -63,7 +63,7 @@ yProfile2 = imtophat(yProfile,seLine);      %background removed
 yProfile3 = smooth(yProfile2, 3)';
 
 
-[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth); 
+[~,yCenters] = findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.002);%, 'MaxPeakWidth', maxPeakWidth); 
 %findpeaks(yProfile3, 'NPeaks', row, 'MinPeakWidth',minPeakWidth,'MinPeakProminence', 0.02);%, 'MaxPeakWidth', maxPeakWidth)
 
 

@@ -61,10 +61,10 @@ matchedDistortedXY = ...
 
 [tformTotal,inlierDistortedXY,inlierOriginalXY] = estimateGeometricTransform(matchedDistortedXY,matchedOriginalXY,'affine');
 
-figure(2)
-showMatchedFeatures(I1,I2,inlierOriginalXY,inlierDistortedXY)
-title('Matching points using SURF and BRISK (inliers only)')
-legend('ptsOriginal','ptsDistorted')
+% figure(2)
+% showMatchedFeatures(I1,I2,inlierOriginalXY,inlierDistortedXY)
+% title('Matching points using SURF and BRISK (inliers only)')
+% legend('ptsOriginal','ptsDistorted')
 
 outputView = imref2d(size(I1));
 Ir = imwarp(I2,tformTotal,'OutputView',outputView);

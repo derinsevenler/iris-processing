@@ -139,7 +139,12 @@ for timeStep = 2:length(imds.Files)
     [bob,spot.validatedRadius,row,col,gridx,gridy]=GridSpot2(spot.tempCenter,spot.validatedRadius,FOVSpotMask.current,row,col,data.current);
     %just doing the following line because matlab crashed
     %otherwise...
-    spot.validatedCenter(:,:,timeStep) = bob;
+    try
+        spot.validatedCenter(:,:,timeStep) = bob;
+    catch
+        [bob,spot.validatedRadius,row,col,gridx,gridy]=GridSpot1(spot.tempCenter,spot.validatedRadius,FOVSpotMask.current,row,col,data.current);
+        spot.validatedCenter(:,:,timeStep) = bob;
+    end
     
     %Define masks based on new centers
     FOVSpotMask.current = spotMask(data.current, spot.validatedRadius, spot.validatedCenter(:,2, timeStep), spot.validatedCenter(:,1, timeStep), spotMaskSize);
