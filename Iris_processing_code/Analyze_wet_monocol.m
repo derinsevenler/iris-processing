@@ -201,12 +201,15 @@ for i = 1:size(spotsRawMed,1)
     end
 end
 %%
-windowSize = 5; 
+
+
+
+windowSize = 41; 
 b = (1/windowSize)*ones(1,windowSize);
 a = 1;
 
-y = filter(b,a,tcornerMeandiffHeight{1,1});
-plot(y')
+y = filter(b,a,tcornerMeandiffHeight{1,1},[],2);
+plot(y)
   %%  
 %reformat for final output with all the data
 results.raw.spotsMed = spotsRawMed;
