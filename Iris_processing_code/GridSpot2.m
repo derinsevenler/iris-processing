@@ -39,7 +39,7 @@ xProfile2 = imtophat(xProfile,seLine);
 xProfile3 = smooth(xProfile2, 3)';
 
 %% Find peaks
-minPeakWidth = max([median(ra) - 6*std(ra), 5]);
+minPeakWidth = max([median(ra) - 3*std(ra), 8]);
 maxPeakWidth = median(ra) + 3*std(ra);
 
 [~,xCenters] = findpeaks(xProfile3, 'NPeaks', col, 'MinPeakWidth',minPeakWidth, 'MinPeakProminence', 0.002);%, 'MaxPeakWidth', maxPeakWidth);

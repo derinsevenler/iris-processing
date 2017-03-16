@@ -156,78 +156,89 @@ for timeStep = 2:length(imds.Files)
     [~, annulusMed(:,:,timeStep),annulusMean(:,:,timeStep)] = MaskMeasure(data.current, FOVAnnulusMask.current, gridx, gridy);
     [~, cornerMed(:,:,timeStep)] = CornerMaskMeasure(data.current, FOVCornerMask.current, gridx, gridy);
     
-    DiffMed(:,:,timeStep) = spotMed(:,:,timeStep) - annulusMed(:,:,timeStep);
-    DiffMean(:,:,timeStep) = spotMean(:,:,timeStep) - annulusMean(:,:,timeStep);
-    
-    % Apply the LUT
-    spotMedLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMed(:,:,timeStep), 'nearest', 0);
-    spotMeanLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMean(:,:,timeStep), 'nearest', 0);
-    annulusMedLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), annulusMed(:,:,timeStep), 'nearest', 0);
-    annulusMeanLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), annulusMean(:,:,timeStep), 'nearest', 0);
-    cornerLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), cornerMed(:,:,timeStep), 'nearest', 0);
-    annulusDiffLUT(:,:,timeStep) = spotMedLUT(:,:,timeStep) - annulusMedLUT(:,:,timeStep);
-    cornerMedDiffLUT(:,:,timeStep) = spotMedLUT(:,:,timeStep) - cornerLUT(:,:,timeStep);
-    cornerMeanDiffLUT(:,:,timeStep) = spotMeanLUT(:,:,timeStep) - cornerLUT(:,:,timeStep);
+%    
+%     
+%     DiffMed(:,:,timeStep) = spotMed(:,:,timeStep) - annulusMed(:,:,timeStep);
+%     DiffMean(:,:,timeStep) = spotMean(:,:,timeStep) - annulusMean(:,:,timeStep);
+%     
+%     % Apply the LUT
+%     spotMedLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMed(:,:,timeStep), 'nearest', 0);
+%     spotMeanLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), spotMean(:,:,timeStep), 'nearest', 0);
+%     annulusMedLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), annulusMed(:,:,timeStep), 'nearest', 0);
+%     annulusMeanLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), annulusMean(:,:,timeStep), 'nearest', 0);
+%     cornerLUT(:,:,timeStep) = interp1(LUT(:,2), LUT(:,1), cornerMed(:,:,timeStep), 'nearest', 0);
+%     annulusDiffLUT(:,:,timeStep) = spotMedLUT(:,:,timeStep) - annulusMedLUT(:,:,timeStep);
+%     cornerMedDiffLUT(:,:,timeStep) = spotMedLUT(:,:,timeStep) - cornerLUT(:,:,timeStep);
+%     cornerMeanDiffLUT(:,:,timeStep) = spotMeanLUT(:,:,timeStep) - cornerLUT(:,:,timeStep);
     
     progressbar(timeStep/length(imds.Files))
 end
-
+%%
 %break data into arrays based on incubation blocks
-spotsRawMed = reformatData(spotMed, numberOfBlocks, rowsBlock, columnsBlock);
-annulusRawMed = reformatData(annulusMed, numberOfBlocks, rowsBlock, columnsBlock);
-diffRawMed = reformatData(DiffMed, numberOfBlocks, rowsBlock, columnsBlock);
-diffRawMean = reformatData(DiffMean, numberOfBlocks, rowsBlock, columnsBlock);
-spotsMedHeight = reformatData(spotMedLUT, numberOfBlocks, rowsBlock, columnsBlock);
-spotsMeanHeight = reformatData(spotMeanLUT, numberOfBlocks, rowsBlock, columnsBlock);
-annulusMedHeight= reformatData(annulusMedLUT, numberOfBlocks, rowsBlock, columnsBlock);
-annulusMeanHeight= reformatData(annulusMeanLUT, numberOfBlocks, rowsBlock, columnsBlock);
-cornerHeight= reformatData(cornerLUT, numberOfBlocks, rowsBlock, columnsBlock);
-annulusdiffHeight = reformatData(annulusDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
-cornerMeddiffHeight = reformatData(cornerMedDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
-cornerMeandiffHeight = reformatData(cornerMeanDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
+    spotsRawMed = reformatData(spotMed, numberOfBlocks, rowsBlock, columnsBlock);
+    cornerRawMed = reformatData(cornerMed, numberOfBlocks, rowsBlock, columnsBlock);
+
+%     spotsRawMed = reformatData(spotMed, numberOfBlocks, rowsBlock, columnsBlock);
+%     annulusRawMed = reformatData(annulusMed, numberOfBlocks, rowsBlock, columnsBlock);
+%     diffRawMed = reformatData(DiffMed, numberOfBlocks, rowsBlock, columnsBlock);
+%     diffRawMean = reformatData(DiffMean, numberOfBlocks, rowsBlock, columnsBlock);
+%     spotsMedHeight = reformatData(spotMedLUT, numberOfBlocks, rowsBlock, columnsBlock);
+%     spotsMeanHeight = reformatData(spotMeanLUT, numberOfBlocks, rowsBlock, columnsBlock);
+%     annulusMedHeight= reformatData(annulusMedLUT, numberOfBlocks, rowsBlock, columnsBlock);
+%     annulusMeanHeight= reformatData(annulusMeanLUT, numberOfBlocks, rowsBlock, columnsBlock);
+%     cornerHeight= reformatData(cornerLUT, numberOfBlocks, rowsBlock, columnsBlock);
+%     annulusdiffHeight = reformatData(annulusDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
+%     cornerMeddiffHeight = reformatData(cornerMedDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
+%     cornerMeandiffHeight = reformatData(cornerMeanDiffLUT, numberOfBlocks, rowsBlock, columnsBlock);
 
 %%
 
-%Form into a timeline: 
+%Form into a timeline and smooth
+windowSize = 41;
 for i = 1:size(spotsRawMed,1)
     for j = 1:size(spotsRawMed,2)
-    
-    tannulusRawMed{i,j} = reshape(annulusRawMed{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tdiffRawMed{i,j} = reshape(diffRawMed{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tdiffRawMean{i,j} = reshape(diffRawMean{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tspotsMedHeight{i,j} = reshape(spotsMedHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tspotsMeanHeight{i,j} = reshape(spotsMeanHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tannulusMedHeight{i,j} = reshape(annulusMedHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tannulusMeanHeight{i,j} = reshape(annulusMeanHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tcornerHeight{i,j} = reshape(cornerHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tannulusdiffHeight{i,j} = reshape(annulusdiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tcornerMeddiffHeight{i,j} = reshape(cornerMeddiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
-    tcornerMeandiffHeight{i,j} = reshape(cornerMeandiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        tspotsRawMed{i,j} = reshape(spotsRawMed{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        tcornerRawMed{i,j} = reshape(cornerRawMed{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        for k =  1:size(tspotsRawMed{i,j},1)
+            smoothspotsRawMed{i,j}(k,:) = smooth(tspotsRawMed{i,j}(k,:)',windowSize)';      %{blocks}(spot,timepoint) (confusing organization
+            smoothcornerRawMed{i,j}(k,:) = smooth(tcornerRawMed{i,j}(k,:)',windowSize)';    %{blocks}(spot,timepoint)
+        end
+        %apply LUT
+        smoothspotsMedLUT{i,j} = interp1(LUT(:,2), LUT(:,1), smoothspotsRawMed{i,j}, 'nearest', 0);
+        smoothcornerMedLUT{i,j} = interp1(LUT(:,2), LUT(:,1), smoothcornerRawMed{i,j}, 'nearest', 0);
+        smoothcornermeddiffLUT{i,j} = smoothspotsMedLUT{i,j} - smoothcornerMedLUT{i,j};
+        %     tannulusRawMed{i,j} = reshape(annulusRawMed{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tdiffRawMean{i,j} = reshape(diffRawMean{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tspotsMedHeight{i,j} = reshape(spotsMedHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tspotsMeanHeight{i,j} = reshape(spotsMeanHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tannulusMedHeight{i,j} = reshape(annulusMedHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tannulusMeanHeight{i,j} = reshape(annulusMeanHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tcornerHeight{i,j} = reshape(cornerHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tannulusdiffHeight{i,j} = reshape(annulusdiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tcornerMeddiffHeight{i,j} = reshape(cornerMeddiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
+        %     tcornerMeandiffHeight{i,j} = reshape(cornerMeandiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
     end
 end
-%%
 
+ 
+%%reformat for final output with all the data
+% results.raw.spotsMed = spotsRawMed;
+% results.raw.annulusMed = annulusRawMed;
+% results.raw.diffMed = diffRawMed;
+% results.raw.diffMean = diffRawMean;
+% results.height.spotsMed = spotsMedHeight;
+% results.height.spotsMean = spotsMeanHeight;
+% results.height.annulus = annulusMedHeight;
+% results.height.corner = cornerHeight;
+% results.height.annulusdiff = annulusdiffHeight;
+% results.height.cornerMeddiff = cornerMeddiffHeight;
+% results.height.cornerMeandiff = cornerMeandiffHeight;
+results.height.spots = smoothspotsMedLUT;
+results.height.corners = smoothcornerMedLUT;
+results.height.diff = smoothcornermeddiffLUT;
+results.raw.spots = tspotsRawMed;
+results.raw.corners = tcornerRawMed;
 
-
-windowSize = 41; 
-b = (1/windowSize)*ones(1,windowSize);
-a = 1;
-
-y = filter(b,a,tcornerMeandiffHeight{1,1},[],2);
-plot(y)
-  %%  
-%reformat for final output with all the data
-results.raw.spotsMed = spotsRawMed;
-results.raw.annulusMed = annulusRawMed;
-results.raw.diffMed = diffRawMed;
-results.raw.diffMean = diffRawMean;
-results.height.spotsMed = spotsMedHeight;
-results.height.spotsMean = spotsMeanHeight;
-results.height.annulus = annulusMedHeight;
-results.height.corner = cornerHeight;
-results.height.annulusdiff = annulusdiffHeight;
-results.height.cornerMeddiff = cornerMeddiffHeight;
-results.height.cornerMeandiff = cornerMeandiffHeight;
 
 %add images masks, and LUT to results file
 results.LUT = LUT;
