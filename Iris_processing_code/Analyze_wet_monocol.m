@@ -207,6 +207,8 @@ for i = 1:size(spotsRawMed,1)
         smoothspotsMedLUT{i,j} = interp1(LUT(:,2), LUT(:,1), smoothspotsRawMed{i,j}, 'nearest', 0);
         smoothcornerMedLUT{i,j} = interp1(LUT(:,2), LUT(:,1), smoothcornerRawMed{i,j}, 'nearest', 0);
         smoothcornermeddiffLUT{i,j} = smoothspotsMedLUT{i,j} - smoothcornerMedLUT{i,j};
+        thicknesschange{i,j} = smoothcornermeddiffLUT{i,j} - repmat(smoothcornermeddiffLUT{i,j}(:,round(windowSize/2)+1),1,size(smoothcornermeddiffLUT{i,j},2));
+ 
         %     tannulusRawMed{i,j} = reshape(annulusRawMed{i,j}, rowsBlock * columnsBlock, length(imds.Files));
         %     tdiffRawMean{i,j} = reshape(diffRawMean{i,j}, rowsBlock * columnsBlock, length(imds.Files));
         %     tspotsMedHeight{i,j} = reshape(spotsMedHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
@@ -219,8 +221,23 @@ for i = 1:size(spotsRawMed,1)
         %     tcornerMeandiffHeight{i,j} = reshape(cornerMeandiffHeight{i,j}, rowsBlock * columnsBlock, length(imds.Files));
     end
 end
+%%
+time = 1:length(imds.Files);
+time = time*3;
+figure
+plot(time,smoothcornermeddiffLUT{1,1}')
+xlabel('time (s)')
+ylabel('height (nm)')
+title('absolute height')
 
- 
+figure
+plot(time,thicknesschange{1,1}')
+xlabel('time (s)')
+ylabel('height (nm)')
+title('height change')
+
+
+%%
 %%reformat for final output with all the data
 % results.raw.spotsMed = spotsRawMed;
 % results.raw.annulusMed = annulusRawMed;
@@ -238,6 +255,7 @@ results.height.corners = smoothcornerMedLUT;
 results.height.diff = smoothcornermeddiffLUT;
 results.raw.spots = tspotsRawMed;
 results.raw.corners = tcornerRawMed;
+
 
 
 %add images masks, and LUT to results file
